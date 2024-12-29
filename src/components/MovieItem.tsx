@@ -4,44 +4,93 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Typography,
+  Box,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check"; // Green tick icon
-import { Movie, MovieDTO } from "../types/Movie";
+import { Movie, AddMovieDTO } from "../types/Movie";
 import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { editMovie, deleteMovie } from "../api/movieApi";
+import { markAsWatched, deleteMovie, editMovie } from "../api/movieApi";
+import { toast } from "react-toastify";
 
 interface MovieItemProps {
   movie: Movie;
-  onMarkAsWatched: (movieId: string) => void; // Added: Prop for marking as watched
+  userId: string; // Add userId to the props
+  onMarkAsWatched: (movieId: string) => void;
 }
 
-const MovieItem: React.FC<MovieItemProps> = ({ movie, onMarkAsWatched }) => {
+const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [isWatchModalOpen, setWatchModalOpen] = useState(false); // Added: State for watch modal
-
+  const [isWatchModalOpen, setWatchModalOpen] = useState(false); // Watch modal state
   const queryClient = useQueryClient();
 
-  const editMovieMutation = useMutation({
-    mutationFn: (updatedMovie: MovieDTO) =>
-      editMovie(movie.movieId.toString(), updatedMovie),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
+  const markAsWatchedMutation = useMutation({
+    mutationFn: async () => markAsWatched(movie.user.userId.toString(), movie.movieId.toString()),
+    onSuccess: (message) => {
+      if (message) {
+        toast.success(message); // Show success message if email is enabled
+      } else {
+        toast.info("Thank you for watching!"); // Show default message
+      }
+      queryClient.invalidateQueries({ queryKey: ["movies"] }); // Refresh the movie list
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 400) {
+        toast.warning(error.response.data); // Show warning message from backend
+      } else {
+        console.error("Error marking movie as watched:", error);
+        toast.error("Failed to mark the movie as watched");
+      }
     },
   });
 
   const deleteMovieMutation = useMutation({
-    mutationFn: (movieToDelete: Movie) =>
-      deleteMovie(movieToDelete.movieId.toString()),
+    mutationFn: async () => deleteMovie(movie.movieId.toString()),
     onSuccess: () => {
+      toast.success("Movie deleted successfully!");
       queryClient.invalidateQueries({ queryKey: ["movies"] });
+      handleCloseDeleteModal();
+    },
+    onError: (error: any) => {
+      console.error("Error deleting movie:", error);
+      toast.error("Failed to delete the movie");
     },
   });
+
+  const updateMovieMutation = useMutation({
+    mutationFn: async ({ movieId, movieData }: { movieId: string, movieData: AddMovieDTO }) => {
+      console.log('Updating movie:', { movieId, movieData }); // Debug log
+      return editMovie(movieId, movieData);
+    },
+    onSuccess: () => {
+      toast.success("Movie updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["movies"] });
+      handleCloseEditModal();
+    },
+    onError: (error: any) => {
+      console.error("Error updating movie:", error);
+      toast.error("Failed to update the movie");
+    },
+  });
+
+  const handleOpenWatchModal = () => {
+    if (movie.status === "Watched") {
+      toast.warning("You cannot mark the same movie as watched twice!");
+      return;
+    }
+    setWatchModalOpen(true);
+  };
+
+  const handleConfirmWatch = () => {
+    markAsWatchedMutation.mutate(); // Trigger the mutation
+    setWatchModalOpen(false);
+  };
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
@@ -49,26 +98,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, onMarkAsWatched }) => {
   const handleOpenDeleteModal = () => setDeleteModalOpen(true);
   const handleCloseDeleteModal = () => setDeleteModalOpen(false);
 
-  const handleOpenWatchModal = () => setWatchModalOpen(true); // Added: Open watch modal
-  const handleCloseWatchModal = () => setWatchModalOpen(false); // Added: Close watch modal
-
-  const handleSaveMovie = async (movieDTO: MovieDTO) => {
-    try {
-      await editMovieMutation.mutateAsync(movieDTO);
-      handleCloseEditModal();
-    } catch (error) {
-      console.error("Error updating movie:", error);
-    }
-  };
-
-  const handleDeleteMovie = async () => {
-    try {
-      await deleteMovieMutation.mutateAsync(movie);
-      handleCloseDeleteModal();
-    } catch (error) {
-      console.error("Error deleting movie:", error);
-    }
-  };
+  const handleCloseWatchModal = () => setWatchModalOpen(false);
 
   return (
     <>
@@ -76,20 +106,99 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, onMarkAsWatched }) => {
         sx={{
           borderBottom: "1px solid #e0e0e0",
           padding: 2,
-          borderRadius: 2,
+          borderRadius: "8px",
+          border: "2px solid #2D6A4F",
+          marginBottom: "16px",
+          backgroundColor: "white",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         }}
       >
         <ListItemText
-          primary={movie.title}
-          secondary={`Genre: ${movie.genre.name} | Description: ${movie.description} | Status: ${movie.status} | Order: ${movie.watchlistOrder}`}
+           primary={ <Typography
+          component="span"
+          sx={{
+            color: "#2D6A4F",
+            fontWeight: "bold",
+            fontSize: "1.2rem",
+            marginBottom: "8px",
+            display: "block"
+          }}
+        >
+          {movie.title}
+        </Typography>
+      }
+        secondary={
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <Typography component="span" sx={{ display: 'block' }}>
+              <Typography
+                component="span"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "1.1rem",
+                  color: "#2D6A4F",
+                  marginRight: "8px"
+                }}
+              >
+                Genre:
+              </Typography>
+              {movie.genre.name}
+            </Typography>
+
+            <Typography component="span" sx={{ display: 'block' }}>
+              <Typography
+                component="span"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "1.1rem",
+                  color: "#2D6A4F",
+                  marginRight: "8px"
+                }}
+              >
+                Description:
+              </Typography>
+              {movie.description}
+            </Typography>
+
+            <Typography component="span" sx={{ display: 'block' }}>
+              <Typography
+                component="span"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "1.1rem",
+                  color: "#2D6A4F",
+                  marginRight: "8px"
+                }}
+              >
+                Status:
+              </Typography>
+              {movie.status}
+            </Typography>
+
+            <Typography component="span" sx={{ display: 'block' }}>
+              <Typography
+                component="span"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "1.1rem",
+                  color: "#2D6A4F",
+                  marginRight: "8px"
+                }}
+              >
+                Watch Order:
+              </Typography>
+              {movie.watchlistOrder}
+            </Typography>
+          </Box>
+        }
+    
         />
         <ListItemSecondaryAction>
-          {/* Added: Mark as Watched Button */}
+          {/* Green tick button to mark as watched */}
           <IconButton
             edge="end"
             aria-label="mark-as-watched"
             sx={{ mr: 1, color: "green" }}
-            onClick={handleOpenWatchModal} // Open watch modal
+            onClick={handleOpenWatchModal} // Open watch confirmation modal
           >
             <CheckIcon />
           </IconButton>
@@ -112,27 +221,35 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, onMarkAsWatched }) => {
         </ListItemSecondaryAction>
       </ListItem>
 
+      {/* Edit Movie Modal */}
       <EditMovieModal
         open={isEditModalOpen}
         movie={movie}
         onClose={handleCloseEditModal}
-        onSave={handleSaveMovie}
+        onSave={(movieId, movieData) =>
+          updateMovieMutation.mutate({
+            movieId: movieId.toString(),
+            movieData
+          })
+        }
       />
 
-      {/* Added: Confirm Watch Modal */}
+      {/* Confirm Watch Modal */}
       <ConfirmWatchModal
         open={isWatchModalOpen}
         onClose={handleCloseWatchModal}
         movie={movie}
-        onConfirm={() => onMarkAsWatched(movie.movieId.toString())}
+        onConfirm={handleConfirmWatch} // Confirm watch handler
       />
 
+      {/* Delete Movie Modal */}
       <DeleteMovieModal
         open={isDeleteModalOpen}
         movieTitle={movie.title}
         onClose={handleCloseDeleteModal}
-        onDelete={handleDeleteMovie}
+        onDelete={() => deleteMovieMutation.mutate()} // Call the delete mutation
       />
+
     </>
   );
 };

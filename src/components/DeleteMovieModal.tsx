@@ -27,10 +27,15 @@ const DeleteMovieModal: React.FC<DeleteMovieModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Delete Movie</DialogTitle>
+      <DialogTitle sx={{
+      color: "#2D6A4F", 
+      fontWeight: "bold", 
+      textTransform: "uppercase", 
+      fontSize: "1.5rem", 
+    }}>DELETE MOVIE</DialogTitle>
       <DialogContent>
         <Typography>
-          Are you sure you want to delete "{movieTitle}"? This action cannot be undone.
+          Are you sure you want to delete <b>"{movieTitle}"</b>? This action cannot be undone.
         </Typography>
       </DialogContent>
       <DialogActions>

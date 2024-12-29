@@ -1,44 +1,28 @@
-// import React from "react";
-// import { List, Paper } from "@mui/material";
-// import { Movie } from "../types/Movie";
-// import MovieItem from "./MovieItem";
 
-// interface MovieListProps {
-//   movies: Movie[];
-// }
 
-// const MovieList: React.FC<MovieListProps> = ({ movies }) => {
-//   return (
-//     <Paper elevation={2} sx={{ mt: 2, mb: 2 }}>
-//       <List>
-//         {movies.map((movie) => (
-//           <MovieItem key={movie.movieId} movie={movie} />
-//         ))}
-//       </List>
-//     </Paper>
-//   );
-// };
-
-// export default MovieList;
 import React from "react";
 import { List, Paper } from "@mui/material";
 import MovieItem from "./MovieItem";
 import { Movie } from "../types/Movie";
 
 interface MovieListProps {
-  movies: Movie[]; // Existing movies prop
-  onMarkAsWatched: (movieId: string) => void; // Added: Prop for marking movies as watched
+  movies: Movie[];
+  onMarkAsWatched: (movieId: string) => void;
+  userId: string; // Add userId prop
 }
 
-const MovieList: React.FC<MovieListProps> = ({ movies, onMarkAsWatched }) => {
+const MovieList: React.FC<MovieListProps> = ({ movies, onMarkAsWatched, userId }) => {
   return (
     <Paper elevation={2} sx={{ mt: 2, mb: 2 }}>
-      <List>
+      <List sx={{
+        backgroundColor: "#EAFCE3"
+      }}>
         {movies.map((movie) => (
           <MovieItem
             key={movie.movieId}
             movie={movie}
-            onMarkAsWatched={onMarkAsWatched} // Pass the required onMarkAsWatched prop to MovieItem
+            userId={userId} // Pass userId to MovieItem
+            onMarkAsWatched={onMarkAsWatched}
           />
         ))}
       </List>
@@ -47,3 +31,6 @@ const MovieList: React.FC<MovieListProps> = ({ movies, onMarkAsWatched }) => {
 };
 
 export default MovieList;
+
+
+

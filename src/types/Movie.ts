@@ -35,4 +35,6 @@ export interface AddMovieDTO {
   genreName: string;
 }
 
+
+
 //Becit je ovdje stavljao types

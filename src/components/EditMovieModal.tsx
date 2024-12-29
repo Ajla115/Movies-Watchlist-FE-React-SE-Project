@@ -13,13 +13,13 @@ import {
   SelectChangeEvent,
   FormHelperText,
 } from '@mui/material';
-import { Movie, MovieDTO } from '../types/Movie';
+import { Movie, AddMovieDTO, MovieDTO } from '../types/Movie';
 
 interface EditMovieModalProps {
   open: boolean;
-  movie: Movie;
+  movie: Movie; // Original Movie object
   onClose: () => void;
-  onSave: (movie: MovieDTO) => void;
+  onSave: (movieId: number, movie: AddMovieDTO) => void; // Include `movieId` as a separate parameter
 }
 
 interface ValidationErrors {
@@ -30,14 +30,25 @@ interface ValidationErrors {
 }
 
 const GENRES = [
-  'Comedy',
-  'Drama',
   'Action',
-  'Horror',
-  'Thriller',
-  'Romance',
+  'Adventure',
+  'Animation',
+  'Biography',
+  'Comedy',
+  'Crime',
   'Documentary',
-  'Animation'
+  'Drama',
+  'Family',
+  'Fantasy',
+  'Historical',
+  'Horror',
+  'Musical',
+  'Mystery',
+  'Romance',
+  'Science Fiction',
+  'Sports',
+  'Thriller',
+  'Western',
 ];
 
 const EditMovieModal: React.FC<EditMovieModalProps> = ({
@@ -51,7 +62,10 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    setEditedMovie({ ...movie });
+    setEditedMovie({
+      ...movie,
+      genre: movie.genre || { name: '' }, // Ensure genre is initialized
+    });
     setErrors({});
     setHasChanges(false);
   }, [movie]);
@@ -101,7 +115,7 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
     };
     setEditedMovie(updatedMovie);
     setHasChanges(checkForChanges(updatedMovie));
-    
+
     if (errors[name as keyof ValidationErrors]) {
       setErrors(prev => ({
         ...prev,
@@ -112,30 +126,31 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
 
   const handleSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
-    let updatedMovie;
     
-    if (name === 'genreName') {
-      updatedMovie = {
-        ...editedMovie,
-        genre: {
-          ...editedMovie.genre,
-          name: value
-        }
-      };
-    } else {
-      updatedMovie = {
-        ...editedMovie,
-        [name]: value,
-      };
-    }
-    
-    setEditedMovie(updatedMovie);
-    setHasChanges(checkForChanges(updatedMovie));
+    setEditedMovie(prev => {
+      let updated;
+      if (name === "genreName") {
+        updated = {
+          ...prev,
+          genre: { ...prev.genre, name: value }
+        };
+      } else if (name === "watchlistOrder") {
+        updated = {
+          ...prev,
+          watchlistOrder: value
+        };
+      } else {
+        updated = prev;
+      }
+      return updated;
+    });
+
+    setHasChanges(true);
     
     if (errors[name as keyof ValidationErrors]) {
       setErrors(prev => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
@@ -143,21 +158,32 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      const movieToSave: MovieDTO = {
+      const movieToSave: AddMovieDTO = {
         title: editedMovie.title,
         description: editedMovie.description,
-        status: 'To Watch', 
+        status: movie.status, // Keep the current status
         watchlistOrder: editedMovie.watchlistOrder,
-        genreId: editedMovie.genre.genreId 
+        genreName: editedMovie.genre?.name || '',
       };
-      onSave(movieToSave);
+
+      console.log('Submitting movie:', movieToSave); // Debug log
+      onSave(movie.movieId, movieToSave);
       onClose();
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Edit Movie</DialogTitle>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth sx={{
+      '& .MuiPaper-root': {
+        border: '2px solid #2D6A4F', // Dark green border
+        borderRadius: '8px', // Optional rounded corners
+      },
+    }}>
+      <DialogTitle sx={{
+        fontWeight: 'bold', // Bold
+        textTransform: 'uppercase', // All capital letters
+        color: '#2D6A4F', // Dark green color
+      }}>Edit Movie</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <TextField
@@ -182,8 +208,8 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
             error={!!errors.description}
             helperText={errors.description}
           />
-          <FormControl 
-            fullWidth 
+          <FormControl
+            fullWidth
             margin="normal"
             error={!!errors.genreName}
           >
@@ -195,39 +221,71 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
               label="Genre"
             >
               {GENRES.map((genre) => (
-                <MenuItem key={genre} value={genre}>
+                <MenuItem key={genre} value={genre} sx={{
+                  "&:hover": {
+                    backgroundColor: "#E9F5EC", // Light green hover
+                  },
+                }}>
                   {genre}
                 </MenuItem>
               ))}
             </Select>
             {errors.genreName && <FormHelperText>{errors.genreName}</FormHelperText>}
           </FormControl>
-          <FormControl 
-            fullWidth 
+          <FormControl
+            fullWidth
             margin="normal"
             error={!!errors.watchlistOrder}
           >
             <InputLabel>Watch Order</InputLabel>
             <Select
               name="watchlistOrder"
-              value={editedMovie.watchlistOrder}
+              value={editedMovie.watchlistOrder || ''}
               onChange={handleSelectChange}
               label="Watch Order"
             >
-              <MenuItem value="Next Up">Next Up</MenuItem>
-              <MenuItem value="When I have time">When I have time</MenuItem>
-              <MenuItem value="Someday">Someday</MenuItem>
+              <MenuItem value="Next Up" sx={{
+                "&:hover": {
+                  backgroundColor: "#E9F5EC", // Light green hover
+                },
+              }}>Next Up</MenuItem>
+              <MenuItem value="When I have time" sx={{
+                "&:hover": {
+                  backgroundColor: "#E9F5EC", // Light green hover
+                },
+              }}>When I have time</MenuItem>
+              <MenuItem value="Someday" sx={{
+                "&:hover": {
+                  backgroundColor: "#E9F5EC", // Light green hover
+                },
+              }}>Someday</MenuItem>
             </Select>
             {errors.watchlistOrder && <FormHelperText>{errors.watchlistOrder}</FormHelperText>}
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary"
-            disabled={!hasChanges}
+          <Button
+            onClick={onClose}
+            sx={{
+              backgroundColor: '#E63946', // Medium red
+              color: '#FFFFFF', // White text
+              '&:hover': {
+                backgroundColor: '#B22234', // Darker red on hover
+              },
+            }}
+          >Cancel</Button>
+
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={!hasChanges} // Disable until changes are detected
+            sx={{
+              backgroundColor: hasChanges ? '#52B788' : '#A9A9A9', // Medium green when enabled, grey when disabled
+              color: '#FFFFFF',
+              '&:hover': {
+                backgroundColor: hasChanges ? '#2D6A4F' : '#A9A9A9', // Dark green hover only when enabled
+              },
+            }}
           >
             Save Changes
           </Button>

@@ -1,5 +1,6 @@
 import axios from "axios";
-import { Movie, MovieDTO, AddMovieDTO } from "../types/Movie";
+import { Movie, AddMovieDTO } from "../types/Movie";
+
 
 const API_URL = "http://localhost:8080/api/movies";
 
@@ -14,11 +15,20 @@ export const addMovie = async (userId: string, movie: AddMovieDTO): Promise<Movi
   return response.data;
 };
 
-export const editMovie = async (movieId: string, movie: MovieDTO): Promise<Movie> => {
-  console.log('Editing movie with data:', movie); // Debug log
-  const response = await axios.put(`${API_URL}/${movieId}`, movie);
-  return response.data;
+export const editMovie = async (movieId: string, movie: AddMovieDTO): Promise<Movie> => {
+  try {
+    const response = await axios.put(`${API_URL}/${movieId}`, movie);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Error editing movie:', error.response || error.message);
+    } else {
+      console.error('Unexpected error:', error);
+    }
+    throw error;
+  }
 };
+
 
 export const deleteMovie = async (movieId: string): Promise<void> => {
   await axios.delete(`${API_URL}/delete/${movieId}`);
@@ -55,7 +65,8 @@ export const sortMoviesByWatchlistOrder = async (userId: string, order: string):
   return response.data;
 };
 
-export const markMovieAsWatched = async (movieId: string): Promise<Movie> => {
-  const response = await axios.put(`${API_URL}/mark-watched/${movieId}`);
+export const markAsWatched = async (userId: string, movieId: string): Promise<string> => {
+  const response = await axios.put(`${API_URL}/mark-watched/${userId}/${movieId}`);
   return response.data;
 };
+
