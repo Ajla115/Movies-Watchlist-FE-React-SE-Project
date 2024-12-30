@@ -8,7 +8,7 @@ import { Movie } from "../types/Movie";
 interface MovieListProps {
   movies: Movie[];
   onMarkAsWatched: (movieId: string) => void;
-  userId: string; // Add userId prop
+  userId: string;
 }
 
 const MovieList: React.FC<MovieListProps> = ({ movies, onMarkAsWatched, userId }) => {
@@ -21,7 +21,7 @@ const MovieList: React.FC<MovieListProps> = ({ movies, onMarkAsWatched, userId }
           <MovieItem
             key={movie.movieId}
             movie={movie}
-            userId={userId} // Pass userId to MovieItem
+            userId={userId} 
             onMarkAsWatched={onMarkAsWatched}
           />
         ))}

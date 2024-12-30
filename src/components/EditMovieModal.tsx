@@ -17,9 +17,9 @@ import { Movie, AddMovieDTO, MovieDTO } from '../types/Movie';
 
 interface EditMovieModalProps {
   open: boolean;
-  movie: Movie; // Original Movie object
+  movie: Movie; 
   onClose: () => void;
-  onSave: (movieId: number, movie: AddMovieDTO) => void; // Include `movieId` as a separate parameter
+  onSave: (movieId: number, movie: AddMovieDTO) => void; 
 }
 
 interface ValidationErrors {
@@ -64,7 +64,7 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
   useEffect(() => {
     setEditedMovie({
       ...movie,
-      genre: movie.genre || { name: '' }, // Ensure genre is initialized
+      genre: movie.genre || { name: '' }, 
     });
     setErrors({});
     setHasChanges(false);
@@ -161,12 +161,12 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
       const movieToSave: AddMovieDTO = {
         title: editedMovie.title,
         description: editedMovie.description,
-        status: movie.status, // Keep the current status
+        status: movie.status, 
         watchlistOrder: editedMovie.watchlistOrder,
         genreName: editedMovie.genre?.name || '',
       };
 
-      console.log('Submitting movie:', movieToSave); // Debug log
+      console.log('Submitting movie:', movieToSave); 
       onSave(movie.movieId, movieToSave);
       onClose();
     }
@@ -175,14 +175,14 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth sx={{
       '& .MuiPaper-root': {
-        border: '2px solid #2D6A4F', // Dark green border
-        borderRadius: '8px', // Optional rounded corners
+        border: '2px solid #2D6A4F', 
+        borderRadius: '8px', 
       },
     }}>
       <DialogTitle sx={{
-        fontWeight: 'bold', // Bold
-        textTransform: 'uppercase', // All capital letters
-        color: '#2D6A4F', // Dark green color
+        fontWeight: 'bold', 
+        textTransform: 'uppercase', 
+        color: '#2D6A4F', 
       }}>Edit Movie</DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
@@ -223,7 +223,7 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
               {GENRES.map((genre) => (
                 <MenuItem key={genre} value={genre} sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC", 
                   },
                 }}>
                   {genre}
@@ -246,17 +246,17 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
             >
               <MenuItem value="Next Up" sx={{
                 "&:hover": {
-                  backgroundColor: "#E9F5EC", // Light green hover
+                  backgroundColor: "#E9F5EC", 
                 },
               }}>Next Up</MenuItem>
               <MenuItem value="When I have time" sx={{
                 "&:hover": {
-                  backgroundColor: "#E9F5EC", // Light green hover
+                  backgroundColor: "#E9F5EC", 
                 },
               }}>When I have time</MenuItem>
               <MenuItem value="Someday" sx={{
                 "&:hover": {
-                  backgroundColor: "#E9F5EC", // Light green hover
+                  backgroundColor: "#E9F5EC", 
                 },
               }}>Someday</MenuItem>
             </Select>
@@ -267,10 +267,10 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
           <Button
             onClick={onClose}
             sx={{
-              backgroundColor: '#E63946', // Medium red
-              color: '#FFFFFF', // White text
+              backgroundColor: '#E63946', 
+              color: '#FFFFFF', 
               '&:hover': {
-                backgroundColor: '#B22234', // Darker red on hover
+                backgroundColor: '#B22234', 
               },
             }}
           >Cancel</Button>
@@ -278,12 +278,12 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
           <Button
             type="submit"
             variant="contained"
-            disabled={!hasChanges} // Disable until changes are detected
+            disabled={!hasChanges} 
             sx={{
-              backgroundColor: hasChanges ? '#52B788' : '#A9A9A9', // Medium green when enabled, grey when disabled
+              backgroundColor: hasChanges ? '#52B788' : '#A9A9A9', 
               color: '#FFFFFF',
               '&:hover': {
-                backgroundColor: hasChanges ? '#2D6A4F' : '#A9A9A9', // Dark green hover only when enabled
+                backgroundColor: hasChanges ? '#2D6A4F' : '#A9A9A9', 
               },
             }}
           >

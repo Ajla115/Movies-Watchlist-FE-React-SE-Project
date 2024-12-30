@@ -31,13 +31,13 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ }) => {
   onChange={handleToggle}
   sx={{
     "& .MuiSwitch-switchBase.Mui-checked": {
-      color: "#2D6A4F", // Dark green for the switch button
+      color: "#2D6A4F", 
     },
     "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-      backgroundColor: "#2D6A4F", // Dark green for the switch track
+      backgroundColor: "#2D6A4F", 
     },
     "& .MuiSwitch-track": {
-      backgroundColor: "#e0e0e0", // Default gray when off
+      backgroundColor: "#e0e0e0", 
     },
   }}
 />

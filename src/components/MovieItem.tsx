@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CheckIcon from "@mui/icons-material/Check"; // Green tick icon
+import CheckIcon from "@mui/icons-material/Check"; 
 import { Movie, AddMovieDTO } from "../types/Movie";
 import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
@@ -20,29 +20,29 @@ import { toast } from "react-toastify";
 
 interface MovieItemProps {
   movie: Movie;
-  userId: string; // Add userId to the props
+  userId: string; 
   onMarkAsWatched: (movieId: string) => void;
 }
 
 const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [isWatchModalOpen, setWatchModalOpen] = useState(false); // Watch modal state
+  const [isWatchModalOpen, setWatchModalOpen] = useState(false); 
   const queryClient = useQueryClient();
 
   const markAsWatchedMutation = useMutation({
     mutationFn: async () => markAsWatched(movie.user.userId.toString(), movie.movieId.toString()),
     onSuccess: (message) => {
       if (message) {
-        toast.success(message); // Show success message if email is enabled
+        toast.success(message); 
       } else {
-        toast.info("Thank you for watching!"); // Show default message
+        toast.info("Thank you for watching!"); 
       }
-      queryClient.invalidateQueries({ queryKey: ["movies"] }); // Refresh the movie list
+      queryClient.invalidateQueries({ queryKey: ["movies"] }); 
     },
     onError: (error: any) => {
       if (error.response?.status === 400) {
-        toast.warning(error.response.data); // Show warning message from backend
+        toast.warning(error.response.data); 
       } else {
         console.error("Error marking movie as watched:", error);
         toast.error("Failed to mark the movie as watched");
@@ -65,7 +65,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
 
   const updateMovieMutation = useMutation({
     mutationFn: async ({ movieId, movieData }: { movieId: string, movieData: AddMovieDTO }) => {
-      console.log('Updating movie:', { movieId, movieData }); // Debug log
+      console.log('Updating movie:', { movieId, movieData }); 
       return editMovie(movieId, movieData);
     },
     onSuccess: () => {
@@ -88,7 +88,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
   };
 
   const handleConfirmWatch = () => {
-    markAsWatchedMutation.mutate(); // Trigger the mutation
+    markAsWatchedMutation.mutate(); 
     setWatchModalOpen(false);
   };
 
@@ -193,12 +193,11 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
     
         />
         <ListItemSecondaryAction>
-          {/* Green tick button to mark as watched */}
           <IconButton
             edge="end"
             aria-label="mark-as-watched"
             sx={{ mr: 1, color: "green" }}
-            onClick={handleOpenWatchModal} // Open watch confirmation modal
+            onClick={handleOpenWatchModal} 
           >
             <CheckIcon />
           </IconButton>
@@ -221,7 +220,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
         </ListItemSecondaryAction>
       </ListItem>
 
-      {/* Edit Movie Modal */}
       <EditMovieModal
         open={isEditModalOpen}
         movie={movie}
@@ -234,20 +232,18 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
         }
       />
 
-      {/* Confirm Watch Modal */}
       <ConfirmWatchModal
         open={isWatchModalOpen}
         onClose={handleCloseWatchModal}
         movie={movie}
-        onConfirm={handleConfirmWatch} // Confirm watch handler
+        onConfirm={handleConfirmWatch} 
       />
 
-      {/* Delete Movie Modal */}
       <DeleteMovieModal
         open={isDeleteModalOpen}
         movieTitle={movie.title}
         onClose={handleCloseDeleteModal}
-        onDelete={() => deleteMovieMutation.mutate()} // Call the delete mutation
+        onDelete={() => deleteMovieMutation.mutate()} 
       />
 
     </>

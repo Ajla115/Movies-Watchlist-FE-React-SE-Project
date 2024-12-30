@@ -21,7 +21,7 @@ const MoviesPage: React.FC = () => {
   const [sortOption, setSortOption] = useState("default");
   const [movies, setMovies] = useState<Movie[]>([]);
 
-  // Fetch movies with default sorting
+
   const { data: fetchedMovies, isLoading, error } = useQuery<Movie[]>({
     queryKey: ["movies", userId],
     queryFn: () => getMoviesByUser(userId),
@@ -34,53 +34,14 @@ const MoviesPage: React.FC = () => {
     }
   }, [fetchedMovies]);
 
-  // const handleGenreFilterChange = (value: string) => {
-  //   setGenreFilter(value);
-  //   if (value === "") {
-  //     fetchMovies();
-  //   } else {
-  //     fetchMoviesByGenre(value);
-  //   }
-  // };
-
-  // const handleStatusFilterChange = (value: string) => {
-  //   setStatusFilter(value);
-  //   console.log("Status Filter:", value);
-  //   if (value === "") {
-  //     fetchMovies();
-  //   } else {
-  //     fetchMoviesByStatus(value);
-  //   }
-  // };
-
-
-  // const handleWatchlistOrderFilterChange = (value: string) => {
-  //   setWatchlistOrderFilter(value);
-  //   if (value === "") {
-  //     fetchMovies();
-  //   } else {
-  //     fetchMoviesByWatchlistOrder(value);
-  //   }
-  // };
-
-  // const handleSortingChange = async (value: string) => {
-  //   setSortOption(value);
-
-  //   if (value === "default") {
-  //     fetchMovies();
-  //   } else if (value === "asc" || value === "desc") {
-  //     fetchSortedMovies(value as "asc" | "desc"); // Explicitly cast to "asc" | "desc"
-  //   }
-  // };
 
 
   const handleGenreFilterChange = (value: string) => {
     setGenreFilter(value);
-    // Reset other filters
     setStatusFilter("");
     setWatchlistOrderFilter("");
     setSortOption("default");
-    
+
     if (value === "") {
       fetchMovies();
     } else {
@@ -90,11 +51,10 @@ const MoviesPage: React.FC = () => {
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    // Reset other filters
     setGenreFilter("");
     setWatchlistOrderFilter("");
     setSortOption("default");
-    
+
     if (value === "") {
       fetchMovies();
     } else {
@@ -104,11 +64,10 @@ const MoviesPage: React.FC = () => {
 
   const handleWatchlistOrderFilterChange = (value: string) => {
     setWatchlistOrderFilter(value);
-    // Reset other filters
     setGenreFilter("");
     setStatusFilter("");
     setSortOption("default");
-    
+
     if (value === "") {
       fetchMovies();
     } else {
@@ -118,11 +77,10 @@ const MoviesPage: React.FC = () => {
 
   const handleSortingChange = async (value: string) => {
     setSortOption(value);
-    // Reset other filters
     setGenreFilter("");
     setStatusFilter("");
     setWatchlistOrderFilter("");
-    
+
     if (value === "default") {
       fetchMovies();
     } else if (value === "asc" || value === "desc") {
@@ -205,24 +163,20 @@ const MoviesPage: React.FC = () => {
       }}
     >
       <Container maxWidth="lg" sx={{ padding: "2rem" }}>
-
-
-
         <Box sx={{ mt: 4, mb: 4 }}>
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
             <Typography
               variant="h4"
               component="h1"
               sx={{
-                fontWeight: 900, // Semi-bold
-                color: "#2D6A4F", // Dark green
-                textAlign: "left", // Align to the left
+                fontWeight: 900,
+                color: "#2D6A4F",
+                textAlign: "left",
               }}
             >
               MY MOVIES
             </Typography>
             <Box display="flex" alignItems="center" gap={2}>
-              {/* Move Notification Toggle here */}
               <NotificationToggle userId={userId} />
               <AddMovieModal onAddMovie={handleAddMovie} />
             </Box>
@@ -237,17 +191,17 @@ const MoviesPage: React.FC = () => {
               >
                 <MenuItem value="default" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Default (Alphabetical)</MenuItem>
                 <MenuItem value="asc" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Watchlist Order (Asc)</MenuItem>
                 <MenuItem value="desc" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Watchlist Order (Desc)</MenuItem>
               </Select>
@@ -261,102 +215,102 @@ const MoviesPage: React.FC = () => {
               >
                 <MenuItem value="" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>None</MenuItem>
                 <MenuItem value="Action" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Action</MenuItem>
                 <MenuItem value="Adventure" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Adventure</MenuItem>
                 <MenuItem value="Animation" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Animation</MenuItem>
                 <MenuItem value="Biography" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Biography</MenuItem>
                 <MenuItem value="Comedy" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Comedy</MenuItem>
                 <MenuItem value="Crime" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Crime</MenuItem>
                 <MenuItem value="Documentary" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Documentary</MenuItem>
                 <MenuItem value="Drama" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Drama</MenuItem>
                 <MenuItem value="Family" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Family</MenuItem>
                 <MenuItem value="Fantasy" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Fantasy</MenuItem>
                 <MenuItem value="Historical" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Historical</MenuItem>
                 <MenuItem value="Horror" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Horror</MenuItem>
                 <MenuItem value="Musical" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Musical</MenuItem>
                 <MenuItem value="Mystery" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Mystery</MenuItem>
                 <MenuItem value="Romance" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Romance</MenuItem>
                 <MenuItem value="Science Fiction" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Science Fiction</MenuItem>
                 <MenuItem value="Sports" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Sports</MenuItem>
                 <MenuItem value="Thriller" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Thriller</MenuItem>
                 <MenuItem value="Western" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Western</MenuItem>
               </Select>
@@ -372,17 +326,17 @@ const MoviesPage: React.FC = () => {
               >
                 <MenuItem value="" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>None</MenuItem>
                 <MenuItem value="To Watch" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>To Watch</MenuItem>
                 <MenuItem value="Watched" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Watched</MenuItem>
               </Select>
@@ -397,22 +351,22 @@ const MoviesPage: React.FC = () => {
               >
                 <MenuItem value="" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>None</MenuItem>
                 <MenuItem value="Next Up" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Next Up</MenuItem>
                 <MenuItem value="When I have time" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>When I have time</MenuItem>
                 <MenuItem value="Someday" sx={{
                   "&:hover": {
-                    backgroundColor: "#E9F5EC", // Light green hover
+                    backgroundColor: "#E9F5EC",
                   },
                 }}>Someday</MenuItem>
               </Select>

@@ -13,8 +13,8 @@ export interface Movie {
   movieId: number;
   title: string;
   description: string;
-  status: string; // "To Watch" or "Watched"
-  watchlistOrder: string; // "Next Up", "When I Have Time", "Someday"
+  status: string; 
+  watchlistOrder: string; 
   genre: Genre;
   user: User;
 }
@@ -35,6 +35,3 @@ export interface AddMovieDTO {
   genreName: string;
 }
 
-
-
-//Becit je ovdje stavljao types

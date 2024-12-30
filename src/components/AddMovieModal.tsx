@@ -14,10 +14,9 @@ import {
   Typography,
   Box,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { toast } from 'react-toastify'; // Import Toastify
+import { toast } from 'react-toastify'; 
 import { AddMovieDTO } from '../types/Movie';
-import { suggestGenre } from '../api/categoryApi'; // Import the API hook
+import { suggestGenre } from '../api/categoryApi'; 
 
 interface AddMovieModalProps {
   onAddMovie: (movie: AddMovieDTO) => void;
@@ -131,18 +130,14 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
     try {
       const suggestedGenre = await suggestGenre(newMovie.title);
   
-      // Check if the response is an actual genre name or an error message
       if (suggestedGenre.startsWith("Error:")) {
-        // Display error message in red toastr
         toast.error(suggestedGenre);
       } else {
-        // Display the suggested genre in green toastr
         toast.success(`AI recommended this genre: ${suggestedGenre}`, {
-          autoClose: 5000, // Longer duration for success toastr
+          autoClose: 5000, 
         });
       }
     } catch (error: any) {
-      // Handle errors from the API call
       toast.error(error.message || 'Something went wrong, please try again later.');
     }
   };
@@ -172,10 +167,10 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
   variant="contained"
   onClick={handleOpen}
   sx={{
-    backgroundColor: "#52B788", // Medium green
-    color: "#FFFFFF", // White text
+    backgroundColor: "#52B788", 
+    color: "#FFFFFF", 
     "&:hover": {
-      backgroundColor: "#2D6A4F", // Dark green on hover
+      backgroundColor: "#2D6A4F", 
     },
   }}
 >
@@ -189,8 +184,8 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
   fullWidth
   sx={{
     "& .MuiPaper-root": {
-      backgroundColor: "#FFFFFF", // White background
-      border: "2px solid #2D6A4F", // Dark green border
+      backgroundColor: "#FFFFFF", 
+      border: "2px solid #2D6A4F", 
       borderRadius: "8px",
     },
   }}
@@ -198,7 +193,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
   <DialogTitle
     sx={{
       fontWeight: 900,
-      color: "#2D6A4F", // Dark green color
+      color: "#2D6A4F", 
       textAlign: "center",
     }}
   >
@@ -224,7 +219,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         sx={{
           "& .MuiOutlinedInput-root": {
             "& fieldset": {
-              borderColor: "#2D6A4F", // Dark green border
+              borderColor: "#2D6A4F", 
             },
             "&:hover fieldset": {
               borderColor: "#2D6A4F",
@@ -235,18 +230,18 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
       <Box
     sx={{
       display: "flex",
-      justifyContent: "center", // Centers the button horizontally
-      marginBottom: "2px", // Adds spacing below the button
+      justifyContent: "center", 
+      marginBottom: "2px", 
     }}
   >
     <Button
       variant="contained"
       onClick={handleAISuggestion}
       sx={{
-        backgroundColor: "#52B788", // Medium green
-        color: "#FFFFFF", // White text
+        backgroundColor: "#52B788", 
+        color: "#FFFFFF", 
         "&:hover": {
-          backgroundColor: "#2D6A4F", // Dark green on hover
+          backgroundColor: "#2D6A4F", 
         },
       }}
     >
@@ -268,7 +263,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         sx={{
           "& .MuiOutlinedInput-root": {
             "& fieldset": {
-              borderColor: "#2D6A4F", // Dark green border
+              borderColor: "#2D6A4F", 
             },
             "&:hover fieldset": {
               borderColor: "#2D6A4F",
@@ -298,7 +293,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
             value="Next Up"
             sx={{
               "&:hover": {
-                backgroundColor: "#E9F5EC", // Light green hover
+                backgroundColor: "#E9F5EC", 
               },
             }}
           >
@@ -350,7 +345,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
               value={genre}
               sx={{
                 "&:hover": {
-                  backgroundColor: "#E9F5EC", // Light green hover
+                  backgroundColor: "#E9F5EC", 
                 },
               }}
             >
@@ -364,10 +359,10 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
       <Button
         onClick={handleClose}
         sx={{
-          backgroundColor: "#F8D7DA", // Light red
-          color: "#D32F2F", // Red text
+          backgroundColor: "#F8D7DA", 
+          color: "#D32F2F", 
           "&:hover": {
-            backgroundColor: "#D32F2F", // Dark red on hover
+            backgroundColor: "#D32F2F", 
             color: "#FFFFFF",
           },
         }}
@@ -377,10 +372,10 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
       <Button
         type="submit"
         sx={{
-          backgroundColor: "#52B788", // Medium green
+          backgroundColor: "#52B788", 
           color: "#FFFFFF",
           "&:hover": {
-            backgroundColor: "#2D6A4F", // Dark green on hover
+            backgroundColor: "#2D6A4F", 
           },
         }}
       >

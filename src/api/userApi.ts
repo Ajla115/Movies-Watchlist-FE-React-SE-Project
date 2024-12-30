@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { API_BASE_URLS } from '../constants';
 
-const API_URL = "http://localhost:8080/api/users";
+const API_URL = API_BASE_URLS.USERS;
 
 export const useNotificationToggle = () => {
   const [emailEnabled, setEmailEnabled] = useState<boolean>(true);
-  const userId = localStorage.getItem("userId"); // Retrieve user ID from localStorage
+  const userId = localStorage.getItem("userId"); 
 
-  // Fetch the current notification status when the hook is used
+  
   useEffect(() => {
     const fetchNotificationStatus = async () => {
       if (!userId) return;
@@ -24,13 +25,13 @@ export const useNotificationToggle = () => {
     fetchNotificationStatus();
   }, [userId]);
 
-  // Mutation to toggle the notification status
+ 
   const toggleNotification = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("User ID not found");
 
       await axios.put(`${API_URL}/change-notification-status/${userId}`);
-      setEmailEnabled((prev) => !prev); // Update the local state
+      setEmailEnabled((prev) => !prev); 
     },
     onError: (error) => {
       console.error("Failed to toggle notification status:", error);
@@ -38,7 +39,6 @@ export const useNotificationToggle = () => {
   });
 
   
-  // Mutation to log in a user
   const loginUser = useMutation({
     mutationFn: (email: string) => axios.post(`${API_URL}/login`, { email }),
     onSuccess: (data: { data: number }) => {

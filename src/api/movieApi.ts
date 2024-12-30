@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Movie, AddMovieDTO } from "../types/Movie";
+import { API_BASE_URLS } from '../constants';
 
-
-const API_URL = "http://localhost:8080/api/movies";
+const API_URL = API_BASE_URLS.MOVIES;
 
 export const getMoviesByUser = async (userId: string): Promise<Movie[]> => {
   const response = await axios.get(`${API_URL}/user/${userId}`);
@@ -10,7 +10,7 @@ export const getMoviesByUser = async (userId: string): Promise<Movie[]> => {
 };
 
 export const addMovie = async (userId: string, movie: AddMovieDTO): Promise<Movie> => {
-  console.log('Adding movie with data:', movie); // Debug log
+  console.log('Adding movie with data:', movie); 
   const response = await axios.post(`${API_URL}/user/${userId}`, movie);
   return response.data;
 };
@@ -42,7 +42,7 @@ export const filterMoviesByStatus = async (userId: string, status: string): Prom
     return response.data;
   };
 
-// Filter movies by watchlist order
+
 export const filterMoviesByWatchlistOrder = async (userId: string, order: string): Promise<Movie[]> => {
   const response = await axios.get(`${API_URL}/filter/watchlist/user/${userId}`, {
     params: { order },
@@ -50,7 +50,7 @@ export const filterMoviesByWatchlistOrder = async (userId: string, order: string
   return response.data;
 };
 
-// Filter movies by genre
+
 export const filterMoviesByGenre = async (userId: string, genreName: string): Promise<Movie[]> => {
   const response = await axios.get(`${API_URL}/filter/genre/user/${userId}`, {
     params: { genreName },
