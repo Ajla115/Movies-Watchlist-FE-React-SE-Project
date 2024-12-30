@@ -5,9 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { API_BASE_URLS } from '../constants';
-
-const API_URL = API_BASE_URLS.USERS;
+import { API_BASE_URL} from '../constants';
 
 const EmailInput: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +13,7 @@ const EmailInput: React.FC = () => {
 
   const loginUser = useMutation({
     mutationFn: (email: string) =>
-      axios.post(`${API_URL}/login`, email, {
+      axios.post(`${API_BASE_URL}/users/login`, email, {
         headers: {
           "Content-Type": "text/plain",
         },
