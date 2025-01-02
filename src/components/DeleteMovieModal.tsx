@@ -35,7 +35,7 @@ const DeleteMovieModal: React.FC<DeleteMovieModalProps> = ({
     }}>DELETE MOVIE</DialogTitle>
       <DialogContent>
         <Typography>
-          Are you sure you want to delete <b>"{movieTitle}"</b>? This action cannot be undone.
+          Are you sure you want to delete "{movieTitle}"? This action cannot be undone.
         </Typography>
       </DialogContent>
       <DialogActions>

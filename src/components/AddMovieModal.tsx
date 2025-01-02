@@ -174,7 +174,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
     },
   }}
 >
-  Add Movie
+  Add Movie Modal
 </Button>
 
 <Dialog
@@ -215,6 +215,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         onChange={handleInputChange}
         error={!!errors.title}
         helperText={errors.title}
+        placeholder='Enter movie title'
         required
         sx={{
           "& .MuiOutlinedInput-root": {
@@ -259,6 +260,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         rows={3}
         error={!!errors.description}
         helperText={errors.description}
+        placeholder='Enter movie description'
         required
         sx={{
           "& .MuiOutlinedInput-root": {
@@ -272,12 +274,14 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         }}
       />
       <FormControl fullWidth margin="normal" required>
-        <InputLabel>Watch Order</InputLabel>
+        <InputLabel htmlFor="watchlist-order-select">Watch Order</InputLabel>
         <Select
+        id="watchlist-order-select" 
           name="watchlistOrder"
           value={newMovie.watchlistOrder}
           onChange={handleSelectChange}
           label="Watch Order"
+          placeholder='Select watch order'
           sx={{
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
@@ -291,6 +295,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         >
           <MenuItem
             value="Next Up"
+            role="value"
             sx={{
               "&:hover": {
                 backgroundColor: "#E9F5EC", 
@@ -300,6 +305,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
             Next Up
           </MenuItem>
           <MenuItem
+          role="value"
             value="When I have time"
             sx={{
               "&:hover": {
@@ -310,6 +316,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
             When I have time
           </MenuItem>
           <MenuItem
+          role="value"
             value="Someday"
             sx={{
               "&:hover": {
@@ -322,12 +329,14 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
         </Select>
       </FormControl>
       <FormControl fullWidth margin="normal" required>
-        <InputLabel>Genre</InputLabel>
+        <InputLabel htmlFor="genre-select">Genre</InputLabel>
         <Select
+         id="genre-select"
           name="genreName"
           value={newMovie.genreName}
           onChange={handleSelectChange}
           label="Genre"
+          placeholder='Select genre'
           sx={{
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
@@ -343,6 +352,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
             <MenuItem
               key={genre}
               value={genre}
+              role="value1"
               sx={{
                 "&:hover": {
                   backgroundColor: "#E9F5EC", 
