@@ -19,6 +19,7 @@ const HomePage: React.FC = () => {
       }}
     >
       <Box
+       role="main"
         sx={{
           display: "flex",
           flexDirection: "column",

@@ -19,7 +19,7 @@ const ConfirmWatchModal: React.FC<ConfirmWatchModalProps> = ({ open, onClose, mo
         fontSize: "1.5rem",
       }}>MARK AS WATCHED</DialogTitle>
       <DialogContent>
-        Are you sure you want to mark <b>"{movie.title}"</b> as watched? This action cannot be undone.
+        Are you sure you want to mark "{movie.title}" as watched? This action cannot be undone.
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="error" variant="contained">Cancel</Button>
