@@ -15,7 +15,7 @@ import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { markAsWatched, deleteMovie, editMovie } from "../api/movieApi";
+import {useMarkAsWatched, deleteMovie, editMovie } from "../api/movieApi";
 import { toast } from "react-toastify";
 
 interface MovieItemProps {
@@ -30,25 +30,22 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
   const [isWatchModalOpen, setWatchModalOpen] = useState(false); 
   const queryClient = useQueryClient();
 
-  const markAsWatchedMutation = useMutation({
-    mutationFn: async () => markAsWatched(movie.user.userId.toString(), movie.movieId.toString()),
-    onSuccess: (message) => {
-      if (message) {
-        toast.success(message); 
-      } else {
-        toast.info("Thank you for watching!"); 
-      }
-      queryClient.invalidateQueries({ queryKey: ["movies"] }); 
-    },
-    onError: (error: any) => {
-      if (error.response?.status === 400) {
-        toast.warning(error.response.data); 
-      } else {
-        console.error("Error marking movie as watched:", error);
-        toast.error("Failed to mark the movie as watched");
-      }
-    },
-  });
+  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+
+  const handleOpenWatchModal = () => {
+    if (movie.status === "Watched") {
+      toast.warning("You cannot mark the same movie as watched twice!");
+      return;
+    }
+    setWatchModalOpen(true);
+  };
+
+  const handleConfirmWatch = () => {
+    markAsWatched({ userId: movie.user.userId.toString(), movieId: movie.movieId.toString() });
+    setWatchModalOpen(false);
+    toast.success(`Movie "${movie.title}" is marked as watched.`);
+  };
+  
 
   const deleteMovieMutation = useMutation({
     mutationFn: async () => deleteMovie(movie.movieId.toString()),
@@ -79,18 +76,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
     },
   });
 
-  const handleOpenWatchModal = () => {
-    if (movie.status === "Watched") {
-      toast.warning("You cannot mark the same movie as watched twice!");
-      return;
-    }
-    setWatchModalOpen(true);
-  };
 
-  const handleConfirmWatch = () => {
-    markAsWatchedMutation.mutate(); 
-    setWatchModalOpen(false);
-  };
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
