@@ -76,8 +76,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
     },
   });
 
-
-
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
 
@@ -100,83 +98,84 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
         }}
       >
         <ListItemText
-           primary={ <Typography
-          component="span"
-          sx={{
-            color: "#2D6A4F",
-            fontWeight: "bold",
-            fontSize: "1.2rem",
-            marginBottom: "8px",
-            display: "block"
-          }}
-        >
-          {movie.title}
-        </Typography>
-      }
-        secondary={
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Genre:
-              </Typography>
-              {movie.genre.name}
+        disableTypography={true}
+          primary={
+            <Typography
+              component="span"
+              sx={{
+                color: "#2D6A4F",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                marginBottom: "8px",
+                display: "block"
+              }}
+            >
+              {movie.title}
             </Typography>
+          }
+          secondary={
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Genre:
+                </Typography>
+                {movie.genre.name}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Description:
-              </Typography>
-              {movie.description}
-            </Typography>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Description:
+                </Typography>
+                {movie.description}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Status:
-              </Typography>
-              {movie.status}
-            </Typography>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Status:
+                </Typography>
+                {movie.status}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Watch Order:
-              </Typography>
-              {movie.watchlistOrder}
-            </Typography>
-          </Box>
-        }
-    
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Watch Order:
+                </Typography>
+                {movie.watchlistOrder}
+              </Box>
+            </Box>
+          }
         />
         <ListItemSecondaryAction>
           <IconButton

@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { toast } from 'react-toastify'; 
 import { AddMovieDTO } from '../types/Movie';
-import { suggestGenre } from '../api/categoryApi'; 
+import { suggestGenre } from '../api/genreApi'; 
 
 interface AddMovieModalProps {
   onAddMovie: (movie: AddMovieDTO) => void;
