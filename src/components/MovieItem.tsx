@@ -62,7 +62,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
 
   const updateMovieMutation = useMutation({
     mutationFn: async ({ movieId, movieData }: { movieId: string, movieData: AddMovieDTO }) => {
-      console.log('Updating movie:', { movieId, movieData }); 
       return editMovie(movieId, movieData);
     },
     onSuccess: () => {

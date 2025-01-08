@@ -11,7 +11,6 @@ export const getMoviesByUser = async (userId: string): Promise<Movie[]> => {
 };
 
 export const addMovie = async (userId: string, movie: AddMovieDTO): Promise<Movie> => {
-  console.log('Adding movie with data:', movie); 
   const response = await axios.post(`${API_BASE_URL}/movies/user/${userId}`, movie);
   return response.data;
 };

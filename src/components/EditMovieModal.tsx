@@ -166,7 +166,6 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
         genreName: editedMovie.genre?.name || '',
       };
 
-      console.log('Submitting movie:', movieToSave); 
       onSave(movie.movieId, movieToSave);
       onClose();
     }
