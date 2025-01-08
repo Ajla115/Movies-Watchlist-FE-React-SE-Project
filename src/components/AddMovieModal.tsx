@@ -151,6 +151,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
 
     try {
       await onAddMovie(newMovie);
+      toast.success('Movie successfully added!');
       handleClose();
     } catch (error) {
       console.error('Failed to add movie:', error);
