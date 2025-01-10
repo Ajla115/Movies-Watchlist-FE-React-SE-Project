@@ -15,7 +15,7 @@ import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { markAsWatched, deleteMovie, editMovie } from "../api/movieApi";
+import {useMarkAsWatched, deleteMovie, editMovie } from "../api/movieApi";
 import { toast } from "react-toastify";
 
 interface MovieItemProps {
@@ -30,25 +30,22 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
   const [isWatchModalOpen, setWatchModalOpen] = useState(false); 
   const queryClient = useQueryClient();
 
-  const markAsWatchedMutation = useMutation({
-    mutationFn: async () => markAsWatched(movie.user.userId.toString(), movie.movieId.toString()),
-    onSuccess: (message) => {
-      if (message) {
-        toast.success(message); 
-      } else {
-        toast.info("Thank you for watching!"); 
-      }
-      queryClient.invalidateQueries({ queryKey: ["movies"] }); 
-    },
-    onError: (error: any) => {
-      if (error.response?.status === 400) {
-        toast.warning(error.response.data); 
-      } else {
-        console.error("Error marking movie as watched:", error);
-        toast.error("Failed to mark the movie as watched");
-      }
-    },
-  });
+  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+
+  const handleOpenWatchModal = () => {
+    if (movie.status === "Watched") {
+      toast.warning("You cannot mark the same movie as watched twice!");
+      return;
+    }
+    setWatchModalOpen(true);
+  };
+
+  const handleConfirmWatch = () => {
+    markAsWatched({ userId: movie.user.userId.toString(), movieId: movie.movieId.toString() });
+    setWatchModalOpen(false);
+    toast.success(`Movie "${movie.title}" is marked as watched.`);
+  };
+  
 
   const deleteMovieMutation = useMutation({
     mutationFn: async () => deleteMovie(movie.movieId.toString()),
@@ -65,7 +62,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
 
   const updateMovieMutation = useMutation({
     mutationFn: async ({ movieId, movieData }: { movieId: string, movieData: AddMovieDTO }) => {
-      console.log('Updating movie:', { movieId, movieData }); 
       return editMovie(movieId, movieData);
     },
     onSuccess: () => {
@@ -78,19 +74,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
       toast.error("Failed to update the movie");
     },
   });
-
-  const handleOpenWatchModal = () => {
-    if (movie.status === "Watched") {
-      toast.warning("You cannot mark the same movie as watched twice!");
-      return;
-    }
-    setWatchModalOpen(true);
-  };
-
-  const handleConfirmWatch = () => {
-    markAsWatchedMutation.mutate(); 
-    setWatchModalOpen(false);
-  };
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
@@ -114,83 +97,84 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
         }}
       >
         <ListItemText
-           primary={ <Typography
-          component="span"
-          sx={{
-            color: "#2D6A4F",
-            fontWeight: "bold",
-            fontSize: "1.2rem",
-            marginBottom: "8px",
-            display: "block"
-          }}
-        >
-          {movie.title}
-        </Typography>
-      }
-        secondary={
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Genre:
-              </Typography>
-              {movie.genre.name}
+        disableTypography={true}
+          primary={
+            <Typography
+              component="span"
+              sx={{
+                color: "#2D6A4F",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                marginBottom: "8px",
+                display: "block"
+              }}
+            >
+              {movie.title}
             </Typography>
+          }
+          secondary={
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Genre:
+                </Typography>
+                {movie.genre.name}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Description:
-              </Typography>
-              {movie.description}
-            </Typography>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Description:
+                </Typography>
+                {movie.description}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Status:
-              </Typography>
-              {movie.status}
-            </Typography>
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Status:
+                </Typography>
+                {movie.status}
+              </Box>
 
-            <Typography component="span" sx={{ display: 'block' }}>
-              <Typography
-                component="span"
-                sx={{
-                  fontWeight: "bold",
-                  fontSize: "1.1rem",
-                  color: "#2D6A4F",
-                  marginRight: "8px"
-                }}
-              >
-                Watch Order:
-              </Typography>
-              {movie.watchlistOrder}
-            </Typography>
-          </Box>
-        }
-    
+              <Box sx={{ display: 'block' }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px"
+                  }}
+                >
+                  Watch Order:
+                </Typography>
+                {movie.watchlistOrder}
+              </Box>
+            </Box>
+          }
         />
         <ListItemSecondaryAction>
           <IconButton

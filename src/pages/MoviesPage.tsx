@@ -7,7 +7,7 @@ import { Container, Box, Typography, FormControl, InputLabel, Select, MenuItem }
 import { AddMovieDTO, Movie } from "../types/Movie";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useLocation } from "react-router-dom";
-import NotificationToggle from "../components/NotificationToggle";
+import NotificationButton from "../components/NotificationToggle";
 
 const MoviesPage: React.FC = () => {
   const location = useLocation();
@@ -177,7 +177,7 @@ const MoviesPage: React.FC = () => {
               MY MOVIES
             </Typography>
             <Box display="flex" alignItems="center" gap={2}>
-              <NotificationToggle userId={userId} />
+              <NotificationButton userId={userId} />
               <AddMovieModal onAddMovie={handleAddMovie} />
             </Box>
           </Box>

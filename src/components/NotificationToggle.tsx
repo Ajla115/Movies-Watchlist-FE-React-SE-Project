@@ -1,21 +1,19 @@
-import React from "react";
-import { Switch, Typography, Box } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Button, Typography, Box } from "@mui/material";
 import { toast } from "react-toastify";
-import { useNotificationToggle } from "../api/userApi";
+import { useNotificationToggle, getNotificationStatus } from "../api/userApi"; 
 
-interface NotificationToggleProps {
+interface NotificationButtonProps {
   userId: string;
 }
 
-const NotificationToggle: React.FC<NotificationToggleProps> = ({ }) => {
-  const { emailEnabled, toggleNotification } = useNotificationToggle();
+const NotificationButton: React.FC<NotificationButtonProps> = ({ userId }) => {
+  const { emailEnabled,toggleNotification } = useNotificationToggle();
 
   const handleToggle = async () => {
     try {
       await toggleNotification.mutateAsync();
-      toast.success(
-        `Notifications ${emailEnabled ? "disabled" : "enabled"} successfully!`
-      );
+      toast.success(`Notifications ${emailEnabled ? "disabled" : "enabled"} successfully!`);
     } catch (error) {
       toast.error("Failed to update notification status.");
     }
@@ -26,23 +24,22 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ }) => {
       <Typography>
         Notifications: {emailEnabled ? "On" : "Off"}
       </Typography>
-      <Switch
-  checked={emailEnabled}
-  onChange={handleToggle}
-  sx={{
-    "& .MuiSwitch-switchBase.Mui-checked": {
-      color: "#2D6A4F", 
-    },
-    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-      backgroundColor: "#2D6A4F", 
-    },
-    "& .MuiSwitch-track": {
-      backgroundColor: "#e0e0e0", 
-    },
-  }}
-/>
+      <Button
+        variant="contained"
+        onClick={handleToggle}
+        sx={{
+          backgroundColor: "#52B788",
+          color: "#FFFFFF",
+          "&:hover": {
+            backgroundColor: "#2D6A4F",
+          },
+        }}
+      >
+        Change your notification status
+      </Button>
     </Box>
   );
 };
 
-export default NotificationToggle;
+export default NotificationButton;
+

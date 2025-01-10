@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { toast } from 'react-toastify'; 
 import { AddMovieDTO } from '../types/Movie';
-import { suggestGenre } from '../api/categoryApi'; 
+import { suggestGenre } from '../api/genreApi'; 
 
 interface AddMovieModalProps {
   onAddMovie: (movie: AddMovieDTO) => void;
@@ -151,6 +151,7 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
 
     try {
       await onAddMovie(newMovie);
+      toast.success('Movie successfully added!');
       handleClose();
     } catch (error) {
       console.error('Failed to add movie:', error);
