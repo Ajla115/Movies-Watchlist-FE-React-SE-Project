@@ -35,3 +35,4 @@ export interface AddMovieDTO {
   genreName: string;
 }
 
+

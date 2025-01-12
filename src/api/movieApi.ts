@@ -3,21 +3,22 @@ import { Movie, AddMovieDTO } from "../types/Movie";
 import { API_BASE_URL } from '../constants';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useState, useEffect } from "react";
 
 
 export const getMoviesByUser = async (userId: string): Promise<Movie[]> => {
-  const response = await axios.get(`${API_BASE_URL}/movies/user/${userId}`);
+  const response = await axios.get(`${API_BASE_URL}/movies/get-all/user/${userId}`);
   return response.data;
 };
 
 export const addMovie = async (userId: string, movie: AddMovieDTO): Promise<Movie> => {
-  const response = await axios.post(`${API_BASE_URL}/movies/user/${userId}`, movie);
+  const response = await axios.post(`${API_BASE_URL}/movies/add/user/${userId}`, movie);
   return response.data;
 };
 
 export const editMovie = async (movieId: string, movie: AddMovieDTO): Promise<Movie> => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/movies/${movieId}`, movie);
+    const response = await axios.put(`${API_BASE_URL}/movies/edit/${movieId}`, movie);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -85,7 +86,6 @@ export const useMarkAsWatched = (movieTitle: string) => {
     },
   });
 };
-
 
 
 
