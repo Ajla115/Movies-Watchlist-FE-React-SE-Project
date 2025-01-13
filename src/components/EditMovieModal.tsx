@@ -139,19 +139,38 @@ useEffect(() => {
     return isValid;
   };
 
-  const checkForChanges = (updatedMovie: AddMovieDTO) => {
-    const isCategoryChanged =
-      selectedCategories.sort().toString() !== movie.watchlistGroupNames.sort().toString() ||
-      newCategory.trim() !== '';
+  // const checkForChanges = (updatedMovie: AddMovieDTO) => {
+  //   const isCategoryChanged =
+  //     selectedCategories.sort().toString() !== movie.watchlistGroupNames.sort().toString() ||
+  //     newCategory.trim() !== '';
 
+  //   return (
+  //     updatedMovie.title !== movie.title ||
+  //     updatedMovie.description !== movie.description ||
+  //     updatedMovie.genreName !== movie.genreName ||
+  //     updatedMovie.watchlistOrder !== movie.watchlistOrder ||
+  //     isCategoryChanged
+  //   );
+  // };
+
+  const checkForChanges = (updatedMovie: AddMovieDTO) => {
+    const initialCategories = movie.watchlistGroupNames || [];
+    const isCategoryChanged =
+      selectedCategories.length !== initialCategories.length ||
+      selectedCategories.some((category) => !initialCategories.includes(category)) ||
+      initialCategories.some((category) => !selectedCategories.includes(category));
+  
     return (
       updatedMovie.title !== movie.title ||
       updatedMovie.description !== movie.description ||
       updatedMovie.genreName !== movie.genreName ||
       updatedMovie.watchlistOrder !== movie.watchlistOrder ||
-      isCategoryChanged
+      isCategoryChanged ||
+      newCategory.trim() !== ''
     );
   };
+  
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -204,12 +223,14 @@ useEffect(() => {
   const handleCategoryChange = (e: SelectChangeEvent<string[]>) => {
     const selectedValues = e.target.value as string[];
     setSelectedCategories(selectedValues);
-    setHasChanges(
-      checkForChanges({
-        ...editedMovie,
-        watchlistGroupNames: selectedValues
-      })
-    );
+  
+    // Manually trigger checkForChanges after updating categories
+    const updatedMovie = {
+      ...editedMovie,
+      watchlistGroupNames: selectedValues,
+    };
+    setHasChanges(checkForChanges(updatedMovie));
+  
     if (errors.category) {
       setErrors((prev) => ({
         ...prev,
@@ -217,6 +238,9 @@ useEffect(() => {
       }));
     }
   };
+  
+  
+  
 
   const handleNewCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewCategory(e.target.value);
