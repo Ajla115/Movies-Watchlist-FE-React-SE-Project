@@ -74,6 +74,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
     onSuccess: () => {
       toast.success("Movie updated successfully!");
       queryClient.invalidateQueries({ queryKey: ["movies"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] }); 
       handleCloseEditModal();
     },
     onError: (error: any) => {
@@ -192,7 +193,9 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
                 >
                   Categories:
                 </Typography>
-                {movie.watchlistGroupNames}
+                {Array.isArray(movie.watchlistGroupNames) && movie.watchlistGroupNames.length > 0
+    ? movie.watchlistGroupNames.join(", ")
+    : "No categories"}
               </Box>
 
             </Box>

@@ -110,7 +110,7 @@ export const useMoviesByCategory = (userId: string, groupId: string) => {
       mutationFn: ({ groupId, deleteMovies }: { groupId: number; deleteMovies: boolean }) => 
         deleteWatchlistGroup(groupId, deleteMovies),
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["watchlistGroups"] });
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
         toast.success("Category deleted successfully!");
       },
       onError: (error: Error) => {

@@ -254,6 +254,7 @@ const handleEditCategory = async (groupId: number, newName: string) => {
   const handleAddMovie = async (newMovie: AddMovieDTO) => {
     try {
       await addMovieMutation.mutateAsync(newMovie);
+      queryClient.invalidateQueries({ queryKey: ["categories"] }); // Invalidate and refetch categories
     } catch (error) {
       console.error("Error adding movie:", error);
       throw error;
