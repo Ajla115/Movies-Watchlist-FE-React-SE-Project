@@ -305,7 +305,7 @@ const handleEditCategory = async (groupId: number, newName: string) => {
             </Typography>
             <Box display="flex" alignItems="center" gap={2}>
               <NotificationButton userId={userId} />
-              <AddMovieModal onAddMovie={handleAddMovie} />
+              <AddMovieModal onAddMovie={handleAddMovie}   categories={categories} />
             </Box>
           </Box>
           <Box display="flex" gap={2} mb={4}>
@@ -514,8 +514,9 @@ const handleEditCategory = async (groupId: number, newName: string) => {
               key={movie.movieId}
               movie={movie}
               userId={userId}
+              categories={categories} // Pass categories prop here
               onMarkAsWatched={(movieId: string) =>
-                console.log(`Marking movie ${movieId} as watched`)
+                console.log("Marking movie", movieId, "as watched")
               }
             />
           ))}
@@ -532,8 +533,9 @@ const handleEditCategory = async (groupId: number, newName: string) => {
             key={movie.movieId}
             movie={movie}
             userId={userId}
+            categories={categories} // Pass categories prop
             onMarkAsWatched={(movieId: string) =>
-              console.log(`Marking movie ${movieId} as watched`)
+              console.log("Marking movie", movieId, "as watched")
             }
           />
         ))}
@@ -551,5 +553,3 @@ const handleEditCategory = async (groupId: number, newName: string) => {
 };
 
 export default MoviesPage;
-
-

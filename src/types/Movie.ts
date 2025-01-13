@@ -17,6 +17,7 @@ export interface Movie {
   watchlistOrder: string; 
   genre: Genre;
   user: User;
+  watchlistGroupNames: string[];
 }
 
 export interface MovieDTO {
@@ -33,6 +34,8 @@ export interface AddMovieDTO {
   status: string;
   watchlistOrder: string;
   genreName: string;
+  watchlistGroupNames: string[]; 
+
 }
 
 

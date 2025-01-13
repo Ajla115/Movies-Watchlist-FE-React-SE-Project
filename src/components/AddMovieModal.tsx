@@ -17,9 +17,12 @@ import {
 import { toast } from 'react-toastify'; 
 import { AddMovieDTO } from '../types/Movie';
 import { suggestGenre } from '../api/genreApi'; 
+import { WatchlistGroup } from "../types/WatchlistGroup";
 
 interface AddMovieModalProps {
   onAddMovie: (movie: AddMovieDTO) => void;
+  categories: WatchlistGroup[]; // Added categories prop for existing categories
+
 }
 
 const initialMovieState: AddMovieDTO = {
@@ -28,6 +31,8 @@ const initialMovieState: AddMovieDTO = {
   status: 'To Watch',
   watchlistOrder: '',
   genreName: '',
+  watchlistGroupNames: [], // Added watchlistGroupNames to track selected/new categories
+
 };
 
 const GENRES = [
@@ -53,10 +58,12 @@ const GENRES = [
 ];
 
 
-const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
+const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories }) => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newMovie, setNewMovie] = useState<AddMovieDTO>(initialMovieState);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Changed to string[]
+  const [newCategory, setNewCategory] = useState<string>(''); // State for new category name
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -86,6 +93,11 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
 
     if (!newMovie.genreName) {
       newErrors.genreName = 'Genre is required';
+      isValid = false;
+    }
+
+    if (selectedCategories.length === 0 && !newCategory.trim()) {
+      newErrors.category = "At least one category must be selected or created";
       isValid = false;
     }
 
@@ -121,6 +133,29 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
     }
   };
 
+  const handleCategoryChange = (e: SelectChangeEvent<string[]>) => {
+    const selectedValues = e.target.value as string[]; // Ensure it's a string[]
+    setSelectedCategories(selectedValues);
+    if (errors.category) {
+      setErrors(prev => ({
+        ...prev,
+        category: '',
+      }));
+    }
+  };
+  
+
+  // Handle new category input
+  const handleNewCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewCategory(e.target.value);
+    if (errors.category) {
+      setErrors(prev => ({
+        ...prev,
+        category: '',
+      }));
+    }
+  };
+
   const handleAISuggestion = async () => {
     if (!newMovie.title.trim()) {
       toast.error('Please fill in the movie title before using AI suggestion!');
@@ -150,7 +185,14 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
     }
 
     try {
-      await onAddMovie(newMovie);
+      const moviePayload = {
+        ...newMovie,
+        watchlistGroupNames: [
+          ...selectedCategories,
+          ...(newCategory.trim() ? [newCategory.trim()] : []),
+        ],
+      };
+      await onAddMovie(moviePayload);
       toast.success('Movie successfully added!');
       handleClose();
     } catch (error) {
@@ -229,6 +271,51 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie }) => {
           },
         }}
       />
+       <FormControl fullWidth margin="normal" required>
+              <InputLabel htmlFor="category-select">Select Category</InputLabel>
+              <Select
+                id="category-select"
+                multiple
+                value={selectedCategories} // Pass string[] here
+                onChange={handleCategoryChange}
+                renderValue={(selected) =>
+                  selected.join(", ") // Display selected category names
+                }
+              >
+                {categories.map((category) => (
+                  <MenuItem key={category.id} value={category.name}> {/* Pass category.name */}
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+
+              {errors.category && (
+                <Typography color="error">{errors.category}</Typography>
+              )}
+            </FormControl>
+
+            {/* New category input */}
+            <Typography align="center" sx={{ my: 2 }}>
+              OR
+            </Typography>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="New Category"
+              value={newCategory}
+              onChange={handleNewCategoryChange}
+              placeholder="Enter new category"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                },
+              }}
+            />
       <Box
     sx={{
       display: "flex",

@@ -67,6 +67,7 @@ export const useMoviesByCategory = (userId: string, groupId: string) => {
   };
 
 
+
   export const addWatchlistGroup = async (categoryName: string): Promise<WatchlistGroup> => {
     try {
         const response = await axios.post(`${API_BASE_URL}/watchlists/add-directly`, null, {
@@ -151,4 +152,16 @@ export const useMoviesByCategory = (userId: string, groupId: string) => {
         toast.error(error.message || "Failed to rename category. Please try again.");
       },
     });
+  };
+
+  export const createOrGetWatchlistGroup = async (name: string): Promise<WatchlistGroup> => {
+    try {
+      const response = await axios.post(`${API_BASE_URL}/watchlists/add-indirectly`, null, {
+        params: { name },
+      });
+      return response.data;
+    } catch (error: any) {
+      toast.error("Failed to create or get category. Please try again.");
+      throw error;
+    }
   };
