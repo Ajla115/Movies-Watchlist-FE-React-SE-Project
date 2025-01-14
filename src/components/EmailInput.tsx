@@ -21,6 +21,7 @@ const EmailInput: React.FC = () => {
     onSuccess: (data) => {
       const userId = data.data;
       localStorage.setItem("userId", userId.toString());
+      toast.success("Logged in successfully!");
       navigate(`/movies?userId=${userId}`);
     },
     onError: () => {

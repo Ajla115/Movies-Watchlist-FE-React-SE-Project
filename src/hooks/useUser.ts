@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { getNotificationStatus, loginUserApi, toggleNotificationStatus  } from "../api/userApi";
 import { useState} from "react";
+import { useNavigate } from "react-router-dom";
 
 export const useGetNotificationStatus = (userId: string) => {
   const { data, error, isLoading } = useQuery<boolean, Error>({
@@ -17,18 +18,14 @@ export const useGetNotificationStatus = (userId: string) => {
 
 
 export const useLoginUser = () => {
-  return useMutation({
-    mutationFn: (email: string) => loginUserApi(email),
-    onSuccess: (userId: number) => {
-      localStorage.setItem("userId", userId.toString());
-      toast.success("Logged in successfully!");
-    },
-    onError: (error: Error) => {
-      console.error("Failed to log in:", error);
-      toast.error("Failed to log in. Please try again.");
-    },
-  });
-};
+    return useMutation({
+      mutationFn: loginUserApi,
+      onError: () => {
+        toast.error("Failed to log in. Please try again.");
+      },
+    });
+  };
+
 
 export const useNotificationToggle = (userId: string) => {
     const queryClient = useQueryClient();

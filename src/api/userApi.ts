@@ -17,7 +17,12 @@ export const toggleNotificationStatus = async (
   await axios.put(`${API_BASE_URL}/users/change-notification-status/${userId}`);
 };
 
-export const loginUserApi = async (email: string): Promise<number> => {
-  const response = await axios.post(`${API_BASE_URL}/users/login`, { email });
+
+export const loginUserApi = async (email: string): Promise<{ data: number }> => {
+  const response = await axios.post(`${API_BASE_URL}/users/login`, email, {
+    headers: {
+      "Content-Type": "text/plain",
+    },
+  });
   return response.data;
 };
