@@ -87,5 +87,98 @@ export const useMarkAsWatched = (movieTitle: string) => {
   });
 };
 
+// export const getFilteredMovies = async (
+//   userId: string,
+//   filters: {
+//     genre?: string;
+//     status?: string;
+//     watchlistOrder?: string;
+//     sort?: string;
+//     categoryId?: string;
+//   }
+// ): Promise<Movie[]> => {
+//   const queryParams = new URLSearchParams();
+
+//   if (filters.genre) queryParams.append("genre", filters.genre);
+//   if (filters.status) queryParams.append("status", filters.status);
+//   if (filters.watchlistOrder) queryParams.append("watchlistOrder", filters.watchlistOrder);
+//   if (filters.sort) queryParams.append("sort", filters.sort);
+//   if (filters.categoryId) queryParams.append("categoryId", filters.categoryId);
+
+//   const response = await fetch(`${API_BASE_URL}/movies/filter/user/1?genre=Adventure&status=To%20watch&categoryId=15`, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//   });
+
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch filtered movies");
+//   }
+
+//   const data = await response.json();
+//   console.log(data);
+//   return data;
+// };
 
 
+// export const getFilteredMovies = async (
+//   userId: string,
+//   filters: {
+//     genre?: string;
+//     status?: string;
+//     watchlistOrder?: string;
+//     sort?: string;
+//     categoryId?: string;
+//   }
+// ): Promise<Movie[]> => {
+//   const queryParams = new URLSearchParams();
+
+//   if (filters.genre) queryParams.append("genre", filters.genre);
+//   if (filters.status) queryParams.append("status", filters.status);
+//   if (filters.watchlistOrder) queryParams.append("watchlistOrder", filters.watchlistOrder);
+//   if (filters.sort) queryParams.append("sort", filters.sort);
+//   if (filters.categoryId) queryParams.append("categoryId", filters.categoryId);
+
+//   const url = `${API_BASE_URL}/movies/filter/user/${userId}?genre=${filters.genre}&status=${filters.status}&watchlistOrder=${filters.watchlistOrder}&sort=${filters.sort}&categoryId=${filters.categoryId}`;
+
+//   const response = await fetch(url);
+
+//   if (!response.ok) {
+//     throw new Error("Failed to fetch filtered movies");
+//   }
+
+//   const data = await response.json();
+//   console.log(data);
+//   return data;
+// };
+
+export const getFilteredMovies = async (
+  userId: string,
+  filters: {
+    genre?: string;
+    status?: string;
+    watchlistOrder?: string;
+    sort?: string;
+    categoryId?: string;
+  }
+): Promise<Movie[]> => {
+  const queryParams: { [key: string]: string | undefined } = {};
+
+  // Only add parameters that are defined
+  if (filters.genre) queryParams.genre = filters.genre;
+  if (filters.status) queryParams.status = filters.status;
+  if (filters.watchlistOrder) queryParams.watchlistOrder = filters.watchlistOrder;
+  if (filters.sort) queryParams.sort = filters.sort;
+  if (filters.categoryId) queryParams.categoryId = filters.categoryId;
+
+  const response = await axios.get(`${API_BASE_URL}/movies/filter/user/${userId}`, {
+    params: queryParams, // Send query parameters only for defined filters
+  });
+
+  if (response.status !== 200) {
+    throw new Error("Failed to fetch filtered movies");
+  }
+
+  return response.data;
+};

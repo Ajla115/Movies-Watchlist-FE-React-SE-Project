@@ -1,21 +1,32 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getMoviesByUser, addMovie, filterMoviesByGenre, filterMoviesByStatus, filterMoviesByWatchlistOrder, 
-  sortMoviesByWatchlistOrder } from "../api/movieApi";
-import { useWatchlistGroups, useMoviesByCategory, addWatchlistGroup, useEditCategory} from "../api/watchlistGroupApi"; 
-import { WatchlistGroup } from "../types/WatchlistGroup"; 
+import { getMoviesByUser, addMovie, getFilteredMovies } from "../api/movieApi";
+import {
+  useWatchlistGroups,
+  useMoviesByCategory,
+  addWatchlistGroup,
+  useEditCategory,
+} from "../api/watchlistGroupApi";
+import { WatchlistGroup } from "../types/WatchlistGroup";
 import MovieItem from "../components/MovieItem";
 import AddMovieModal from "../components/AddMovieModal";
 import AddCategoryModal from "../components/AddCategoryModal";
-import { Container, Box, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import {
+  Container,
+  Box,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import { AddMovieDTO, Movie } from "../types/Movie";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useLocation } from "react-router-dom";
 import NotificationButton from "../components/NotificationToggle";
-import { List, Button } from "@mui/material"; 
+import { List, Button } from "@mui/material";
 import DeleteCategoryModal from "../components/DeleteCategoryModal";
 import { useDeleteCategory } from "../api/watchlistGroupApi";
-import { toast } from "react-toastify";
 import EditCategoryModal from "../components/EditCategoryModal";
 
 const MoviesPage: React.FC = () => {
@@ -32,13 +43,30 @@ const MoviesPage: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
-  const { categories, isLoading: isCategoriesLoading, error: categoriesError } = useWatchlistGroups();
+  const [appliedFilters, setAppliedFilters] = useState({
+    genre: "",
+    status: "",
+    watchlistOrder: "",
+    sort: "default",
+    categoryId: "",
+  });
 
-  const { movies: categoryMovies, isLoading: isCategoryLoading, error: categoryError } =
-  useMoviesByCategory(userId, selectedCategory);
+  const {
+    categories,
+    isLoading: isCategoriesLoading,
+    error: categoriesError,
+  } = useWatchlistGroups();
 
-  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false);
+  const {
+    movies: categoryMovies,
+    isLoading: isCategoryLoading,
+    error: categoryError,
+  } = useMoviesByCategory(userId, selectedCategory);
+
+  const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] =
+    useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<number | null>(null);
+  const [filtersApplied, setFiltersApplied] = useState(false);
 
   const deleteCategoryMutation = useDeleteCategory();
 
@@ -52,36 +80,41 @@ const MoviesPage: React.FC = () => {
     setCategoryToDelete(null);
   };
 
-  const handleDeleteCategory = async (groupId: number, deleteMovies: boolean) => {
+  const handleDeleteCategory = async (
+    groupId: number,
+    deleteMovies: boolean
+  ) => {
     try {
       await deleteCategoryMutation.mutateAsync({ groupId, deleteMovies });
-      queryClient.invalidateQueries({ queryKey: ["categories"] }); 
-      handleCloseDeleteCategoryModal(); 
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      handleCloseDeleteCategoryModal();
     } catch (error) {
       console.error("Error deleting category:", error);
     }
   };
-  
+
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState(false);
 
-const handleOpenEditCategoryModal = () => {
-  setIsEditCategoryModalOpen(true);
-};
+  const handleOpenEditCategoryModal = () => {
+    setIsEditCategoryModalOpen(true);
+  };
 
-const handleCloseEditCategoryModal = () => {
-  setIsEditCategoryModalOpen(false);
-};
+  const handleCloseEditCategoryModal = () => {
+    setIsEditCategoryModalOpen(false);
+  };
 
-const editCategoryMutation = useEditCategory();
+  const editCategoryMutation = useEditCategory();
 
-const handleEditCategory = async (groupId: number, newName: string) => {
-  try {
-    await editCategoryMutation.mutateAsync({ groupId, newName });
-    handleCloseEditCategoryModal();
-  } catch (error) {
-    console.error("Error editing category:", error);
-  }
-};
+  const handleEditCategory = async (groupId: number, newName: string) => {
+    try {
+      await editCategoryMutation.mutateAsync({ groupId, newName });
+      fetchCategories();
+      handleCloseEditCategoryModal();
+    } catch (error) {
+      console.error("Error editing category:", error);
+    }
+  };
+
   const genreOptions = [
     "Action",
     "Adventure",
@@ -113,6 +146,87 @@ const handleEditCategory = async (groupId: number, newName: string) => {
     { value: "desc", label: "Watchlist Order (Desc)" },
   ];
 
+  const handleApplyFilters = () => {
+    setAppliedFilters({
+      genre: genreFilter,
+      status: statusFilter,
+      watchlistOrder: watchlistOrderFilter,
+      sort: sortOption,
+      categoryId: selectedCategory,
+    });
+    setFiltersApplied(true);
+  };
+
+  const handleResetFilters = () => {
+    setGenreFilter("");
+    setStatusFilter("");
+    setWatchlistOrderFilter("");
+    setSortOption("default");
+    setSelectedCategory("");
+    setAppliedFilters({
+      genre: "",
+      status: "",
+      watchlistOrder: "",
+      sort: "default",
+      categoryId: "",
+    });
+    setFiltersApplied(false);
+  };
+
+  const {
+    data: allMovies,
+    isLoading: isAllMoviesLoading,
+    error: allMoviesError,
+  } = useQuery<Movie[]>({
+    queryKey: ["movies", userId],
+    queryFn: () => getMoviesByUser(userId),
+    enabled: !!userId && !filtersApplied,
+  });
+
+  const {
+    data: fetchedMovies,
+    isLoading,
+    error,
+  } = useQuery<Movie[]>({
+    queryKey: [
+      "movies",
+      userId,
+      appliedFilters.genre,
+      appliedFilters.status,
+      appliedFilters.watchlistOrder,
+      appliedFilters.sort,
+      appliedFilters.categoryId,
+    ],
+    queryFn: () =>
+      getFilteredMovies(userId, {
+        genre: appliedFilters.genre || undefined,
+        status: appliedFilters.status || undefined,
+        watchlistOrder: appliedFilters.watchlistOrder || undefined,
+        sort:
+          appliedFilters.sort !== "default" ? appliedFilters.sort : undefined,
+        categoryId: appliedFilters.categoryId || undefined,
+      }),
+
+    enabled: filtersApplied && !!userId,
+  });
+
+  // useEffect(() => {
+  //   if (fetchedMovies && fetchedMovies.length > 0) {
+  //     setMovies(fetchedMovies);
+  //   } else if (allMovies && allMovies.length > 0) {
+  //     setMovies(allMovies);
+  //   }
+  // }, [fetchedMovies, allMovies]);
+
+  useEffect(() => {
+    if (fetchedMovies && fetchedMovies.length > 0) {
+      setMovies(fetchedMovies);
+    } else if (fetchedMovies?.length === 0) {
+      setMovies([]);
+    } else if (allMovies && !filtersApplied) {
+      setMovies(allMovies);
+    }
+  }, [fetchedMovies, allMovies, filtersApplied]);
 
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
 
@@ -126,24 +240,17 @@ const handleEditCategory = async (groupId: number, newName: string) => {
 
   const handleAddCategory = async (categoryName: string) => {
     try {
-      await addWatchlistGroup(categoryName); 
-      fetchCategories(); 
-      handleCloseAddCategoryModal(); 
+      await addWatchlistGroup(categoryName);
+      fetchCategories();
+      handleCloseAddCategoryModal();
     } catch (error) {
       console.error("Error adding category:", error);
     }
   };
-  
+
   const fetchCategories = async () => {
     queryClient.invalidateQueries({ queryKey: ["categories"] });
   };
-
-  const { data: fetchedMovies, isLoading, error } = useQuery<Movie[]>({
-    queryKey: ["movies", userId],
-    queryFn: () => getMoviesByUser(userId),
-    enabled: !!userId,
-  });
-
 
   useEffect(() => {
     if (fetchedMovies) {
@@ -151,98 +258,9 @@ const handleEditCategory = async (groupId: number, newName: string) => {
     }
   }, [fetchedMovies]);
 
-  const handleGenreFilterChange = (value: string) => {
-    setGenreFilter(value);
-    setStatusFilter("");
-    setWatchlistOrderFilter("");
-    setSortOption("default");
-
-    if (value === "") {
-      fetchMovies();
-    } else {
-      fetchMoviesByGenre(value);
-    }
-  };
-
-  const handleStatusFilterChange = (value: string) => {
-    setStatusFilter(value);
-    setGenreFilter("");
-    setWatchlistOrderFilter("");
-    setSortOption("default");
-
-    if (value === "") {
-      fetchMovies();
-    } else {
-      fetchMoviesByStatus(value);
-    }
-  };
-
-  const handleWatchlistOrderFilterChange = (value: string) => {
-    setWatchlistOrderFilter(value);
-    setGenreFilter("");
-    setStatusFilter("");
-    setSortOption("default");
-
-    if (value === "") {
-      fetchMovies();
-    } else {
-      fetchMoviesByWatchlistOrder(value);
-    }
-  };
-
-  const handleSortingChange = async (value: string) => {
-    setSortOption(value);
-    setGenreFilter("");
-    setStatusFilter("");
-    setWatchlistOrderFilter("");
-
-    if (value === "default") {
-      fetchMovies();
-    } else if (value === "asc" || value === "desc") {
-      fetchSortedMovies(value as "asc" | "desc");
-    }
-  };
-
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
-    setGenreFilter("");
-    setStatusFilter("");
-    setWatchlistOrderFilter("");
-    setSortOption("default");
-  
-    if (value === "") {
-      setSelectedCategory(""); 
-    }
   };
-  
-  const fetchMovies = async () => {
-    const allMovies = await getMoviesByUser(userId);
-    setMovies(allMovies);
-  };
-
-  const fetchMoviesByGenre = async (genreName: string) => {
-    const filteredMovies = await filterMoviesByGenre(userId, genreName);
-    setMovies(filteredMovies);
-  };
-
-
-  const fetchMoviesByStatus = async (status: string) => {
-    const filteredMovies = await filterMoviesByStatus(userId, status);
-    setMovies(filteredMovies);
-  };
-
-
-
-  const fetchMoviesByWatchlistOrder = async (order: string) => {
-    const filteredMovies = await filterMoviesByWatchlistOrder(userId, order);
-    setMovies(filteredMovies);
-  };
-
-  const fetchSortedMovies = async (order: "asc" | "desc") => {
-    const sortedMovies = await sortMoviesByWatchlistOrder(userId, order);
-    setMovies(sortedMovies);
-  };
-
 
   const addMovieMutation = useMutation({
     mutationFn: (newMovie: AddMovieDTO) => addMovie(userId, newMovie),
@@ -254,7 +272,7 @@ const handleEditCategory = async (groupId: number, newName: string) => {
   const handleAddMovie = async (newMovie: AddMovieDTO) => {
     try {
       await addMovieMutation.mutateAsync(newMovie);
-      queryClient.invalidateQueries({ queryKey: ["categories"] }); // Invalidate and refetch categories
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
     } catch (error) {
       console.error("Error adding movie:", error);
       throw error;
@@ -292,7 +310,12 @@ const handleEditCategory = async (groupId: number, newName: string) => {
     >
       <Container maxWidth="lg" sx={{ padding: "2rem" }}>
         <Box sx={{ mt: 4, mb: 4 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={3}
+          >
             <Typography
               variant="h4"
               component="h1"
@@ -306,51 +329,63 @@ const handleEditCategory = async (groupId: number, newName: string) => {
             </Typography>
             <Box display="flex" alignItems="center" gap={2}>
               <NotificationButton userId={userId} />
-              <AddMovieModal onAddMovie={handleAddMovie}   categories={categories} />
+              <AddMovieModal
+                onAddMovie={handleAddMovie}
+                categories={categories}
+              />
             </Box>
           </Box>
           <Box display="flex" gap={2} mb={4}>
-          <FormControl fullWidth sx={{ mb: 4 }}>
-            <InputLabel id="sort-label">Sort Movies</InputLabel>
-            <Select
-              labelId="sort-label"
-              value={sortOption}
-              onChange={(e) => handleSortingChange(e.target.value)}
-            >
-              {sortingOptions.map((option) => (
-                <MenuItem
-                  key={option.value}
-                  value={option.value}
-                  sx={{
-                    "&:hover": {
-                      backgroundColor: "#E9F5EC",
-                    },
-                  }}
-                >
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <FormControl fullWidth sx={{ mb: 4 }}>
+              <InputLabel id="sort-label">Sort Movies</InputLabel>
+              <Select
+                labelId="sort-label"
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value)}
+              >
+                {sortingOptions.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.value}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#E9F5EC",
+                      },
+                    }}
+                  >
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
             <FormControl fullWidth sx={{ mb: 4 }}>
               <InputLabel id="filter-label">Filter by Genre</InputLabel>
               <Select
                 labelId="filter-label"
                 value={genreFilter}
-                onChange={(e) => handleGenreFilterChange(e.target.value)}
+                onChange={(e) => setGenreFilter(e.target.value)}
               >
-                <MenuItem value="" sx={{
-                  "&:hover": {
-                    backgroundColor: "#E9F5EC",
-                  },
-                }}>None</MenuItem>
-                {genreOptions.map((genre) => (
-                  <MenuItem key={genre} value={genre} sx={{
+                <MenuItem
+                  value=""
+                  sx={{
                     "&:hover": {
                       backgroundColor: "#E9F5EC",
                     },
-                  }}>
+                  }}
+                >
+                  None
+                </MenuItem>
+                {genreOptions.map((genre) => (
+                  <MenuItem
+                    key={genre}
+                    value={genre}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#E9F5EC",
+                      },
+                    }}
+                  >
                     {genre}
                   </MenuItem>
                 ))}
@@ -361,19 +396,28 @@ const handleEditCategory = async (groupId: number, newName: string) => {
               <Select
                 labelId="status-filter-label"
                 value={statusFilter}
-                onChange={(e) => handleStatusFilterChange(e.target.value)}
+                onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <MenuItem value="" sx={{
-                  "&:hover": {
-                    backgroundColor: "#E9F5EC",
-                  },
-                }}>None</MenuItem>
-                {statusOptions.map((status) => (
-                  <MenuItem key={status} value={status} sx={{
+                <MenuItem
+                  value=""
+                  sx={{
                     "&:hover": {
                       backgroundColor: "#E9F5EC",
                     },
-                  }}>
+                  }}
+                >
+                  None
+                </MenuItem>
+                {statusOptions.map((status) => (
+                  <MenuItem
+                    key={status}
+                    value={status}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#E9F5EC",
+                      },
+                    }}
+                  >
                     {status}
                   </MenuItem>
                 ))}
@@ -387,28 +431,67 @@ const handleEditCategory = async (groupId: number, newName: string) => {
               <Select
                 labelId="watchlist-order-filter-label"
                 value={watchlistOrderFilter}
-                onChange={(e) => handleWatchlistOrderFilterChange(e.target.value)}
+                onChange={(e) => setWatchlistOrderFilter(e.target.value)}
               >
-                <MenuItem value="" sx={{
+                <MenuItem
+                  value=""
+                  sx={{
                     "&:hover": {
                       backgroundColor: "#E9F5EC",
                     },
-                  }}>None</MenuItem>
+                  }}
+                >
+                  None
+                </MenuItem>
                 {watchlistOrderOptions.map((order) => (
-                  <MenuItem key={order} value={order} sx={{
-                    "&:hover": {
-                      backgroundColor: "#E9F5EC",
-                    },
-                  }}>
+                  <MenuItem
+                    key={order}
+                    value={order}
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#E9F5EC",
+                      },
+                    }}
+                  >
                     {order}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-
-
           </Box>
-
+          <Box
+            display="flex"
+            justifyContent="flex-end"
+            gap={2}
+            sx={{ mt: -5, mb: 4 }}
+          >
+            <Button
+              variant="contained"
+              onClick={handleApplyFilters}
+              sx={{
+                backgroundColor: "#2D6A4F",
+                color: "#FFFFFF",
+                "&:hover": {
+                  backgroundColor: "#1B4332",
+                },
+              }}
+            >
+              Apply Filters
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilters}
+              sx={{
+                color: "#2D6A4F",
+                borderColor: "#2D6A4F",
+                "&:hover": {
+                  borderColor: "#1B4332",
+                },
+              }}
+            >
+              Reset Filters
+            </Button>
+          </Box>
           <Box sx={{ mb: 4 }}>
             <Typography
               variant="h6"
@@ -419,22 +502,34 @@ const handleEditCategory = async (groupId: number, newName: string) => {
 
             <Box display="flex" gap={2}>
               <FormControl fullWidth>
-                <InputLabel id="category-filter-label">Select Category</InputLabel>
+                <InputLabel id="category-filter-label">
+                  Select Category
+                </InputLabel>
                 <Select
                   labelId="category-filter-label"
                   value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}>
-                  <MenuItem value="" sx={{
-                                      "&:hover": {
-                                        backgroundColor: "#E9F5EC",
-                                      },
-                                    }}>None</MenuItem>
-                  {categories.map((category: WatchlistGroup) => (
-                    <MenuItem key={category.id} value={category.id} sx={{
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <MenuItem
+                    value=""
+                    sx={{
                       "&:hover": {
                         backgroundColor: "#E9F5EC",
                       },
-                    }}>
+                    }}
+                  >
+                    None
+                  </MenuItem>
+                  {categories.map((category: WatchlistGroup) => (
+                    <MenuItem
+                      key={category.id}
+                      value={category.id}
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "#E9F5EC",
+                        },
+                      }}
+                    >
                       {category.name}
                     </MenuItem>
                   ))}
@@ -461,95 +556,78 @@ const handleEditCategory = async (groupId: number, newName: string) => {
                   onAddCategory={handleAddCategory}
                 />
 
-<Button
-  variant="contained"
-  onClick={handleOpenEditCategoryModal}
-  sx={{
-    backgroundColor: "#2196F3", // Blue color for edit button
-    color: "#FFFFFF",
-    "&:hover": {
-      backgroundColor: "#1769AA",
-    },
-  }}
->
-  Edit Category
-</Button>
+                <Button
+                  variant="contained"
+                  onClick={handleOpenEditCategoryModal}
+                  sx={{
+                    backgroundColor: "#2196F3", // Blue color for edit button
+                    color: "#FFFFFF",
+                    "&:hover": {
+                      backgroundColor: "#1769AA",
+                    },
+                  }}
+                >
+                  Edit Category
+                </Button>
 
-<EditCategoryModal
-  open={isEditCategoryModalOpen}
-  onClose={handleCloseEditCategoryModal}
-  categories={categories}
-  onEditCategory={handleEditCategory}
-/>
+                <EditCategoryModal
+                  open={isEditCategoryModalOpen}
+                  onClose={handleCloseEditCategoryModal}
+                  categories={categories}
+                  onEditCategory={handleEditCategory}
+                />
 
-          <Button
-              variant="contained"
-              onClick={() => handleOpenDeleteCategoryModal(Number(selectedCategory))}
-              sx={{
-                backgroundColor: "#D32F2F",
-                color: "#FFFFFF",
-                "&:hover": {
-                  backgroundColor: "#A00000",
-                },
-              }}
-            >
-              Delete Category
-            </Button>
+                <Button
+                  variant="contained"
+                  onClick={() =>
+                    handleOpenDeleteCategoryModal(Number(selectedCategory))
+                  }
+                  sx={{
+                    backgroundColor: "#D32F2F",
+                    color: "#FFFFFF",
+                    "&:hover": {
+                      backgroundColor: "#A00000",
+                    },
+                  }}
+                >
+                  Delete Category
+                </Button>
 
-            <DeleteCategoryModal
-              open={isDeleteCategoryModalOpen}
-              onClose={handleCloseDeleteCategoryModal}
-              onDeleteCategory={handleDeleteCategory}
-              categories={categories}
-            />
+                <DeleteCategoryModal
+                  open={isDeleteCategoryModalOpen}
+                  onClose={handleCloseDeleteCategoryModal}
+                  onDeleteCategory={handleDeleteCategory}
+                  categories={categories}
+                />
               </Box>
-                
-                 
-                </Box>
-              </Box>
-              {selectedCategory ? (
-      categoryMovies.length > 0 ? (
-        <List>
-          {categoryMovies.map((movie) => (
-            <MovieItem
-              key={movie.movieId}
-              movie={movie}
-              userId={userId}
-              categories={categories} // Pass categories prop here
-              onMarkAsWatched={(movieId: string) =>
-                console.log("Marking movie", movieId, "as watched")
-              }
-            />
-          ))}
-        </List>
-      ) : (
-        <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-          No movies found in this category.
-        </Typography>
-      )
-    ) : (
-      <List>
-        {movies.map((movie) => (
-          <MovieItem
-            key={movie.movieId}
-            movie={movie}
-            userId={userId}
-            categories={categories} // Pass categories prop
-            onMarkAsWatched={(movieId: string) =>
-              console.log("Marking movie", movieId, "as watched")
-            }
-          />
-        ))}
-      </List>
-    )}
-
-          
+            </Box>
           </Box>
+          <Box>
+            <Box>
+              {movies.length > 0 ? (
+                <List>
+                  {movies.map((movie) => (
+                    <MovieItem
+                      key={movie.movieId}
+                      movie={movie}
+                      userId={userId}
+                      categories={categories}
+                      onMarkAsWatched={(movieId: string) =>
+                        console.log("Marking movie", movieId, "as watched")
+                      }
+                    />
+                  ))}
+                </List>
+              ) : (
+                <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+                  No movies found.
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Box>
       </Container>
     </Box>
-
-
-
   );
 };
 
