@@ -4,9 +4,10 @@ import { getMoviesByUser, addMovie, getFilteredMovies } from "../api/movieApi";
 import {
   useWatchlistGroups,
   useMoviesByCategory,
-  addWatchlistGroup,
+  useAddCategory,
   useEditCategory,
-} from "../api/watchlistGroupApi";
+  useDeleteCategory,
+} from "../hooks/useWatchlistGroups";
 import { WatchlistGroup } from "../types/WatchlistGroup";
 import MovieItem from "../components/MovieItem";
 import AddMovieModal from "../components/AddMovieModal";
@@ -26,8 +27,8 @@ import { useLocation } from "react-router-dom";
 import NotificationButton from "../components/NotificationToggle";
 import { List, Button } from "@mui/material";
 import DeleteCategoryModal from "../components/DeleteCategoryModal";
-import { useDeleteCategory } from "../api/watchlistGroupApi";
 import EditCategoryModal from "../components/EditCategoryModal";
+import { toast } from "react-toastify";
 
 const MoviesPage: React.FC = () => {
   const location = useLocation();
@@ -86,8 +87,8 @@ const MoviesPage: React.FC = () => {
   ) => {
     try {
       await deleteCategoryMutation.mutateAsync({ groupId, deleteMovies });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["movies", userId] }); // Refetch movies
+      //queryClient.invalidateQueries({ queryKey: ["categories"] });
+      //queryClient.invalidateQueries({ queryKey: ["movies", userId] }); 
 
       handleCloseDeleteCategoryModal();
     } catch (error) {
@@ -107,15 +108,32 @@ const MoviesPage: React.FC = () => {
 
   const editCategoryMutation = useEditCategory();
 
-  const handleEditCategory = async (groupId: number, newName: string) => {
-    try {
-      await editCategoryMutation.mutateAsync({ groupId, newName });
-      fetchCategories();
-      handleCloseEditCategoryModal();
-    } catch (error) {
-      console.error("Error editing category:", error);
-    }
+  // const handleEditCategory = async (groupId: number, newName: string) => {
+  //   try {
+  //     await editCategoryMutation.mutateAsync({ groupId, newName });
+  //     fetchCategories();
+  //     handleCloseEditCategoryModal();
+  //   } catch (error) {
+  //     console.error("Error editing category:", error);
+  //   }
+  // };
+
+  const handleEditCategory = (groupId: number, newName: string) => {
+    editCategoryMutation.mutate(
+      { groupId, newName },
+      {
+        onSuccess: () => {
+          handleCloseEditCategoryModal(); // Close modal on success
+          //queryClient.invalidateQueries({ queryKey: ["categories"] }); // Refetch categories
+        },
+        onError: (error) => {
+          console.error("Error editing category:", error);
+          toast.error("Failed to edit category. Please try again.");
+        },
+      }
+    );
   };
+  
 
   const genreOptions = [
     "Action",
@@ -240,19 +258,30 @@ const MoviesPage: React.FC = () => {
     setIsAddCategoryModalOpen(false);
   };
 
-  const handleAddCategory = async (categoryName: string) => {
-    try {
-      await addWatchlistGroup(categoryName);
-      fetchCategories();
-      handleCloseAddCategoryModal();
-    } catch (error) {
-      console.error("Error adding category:", error);
-    }
-  };
+  // const handleAddCategory = async (categoryName: string) => {
+  //   try {
+  //     await addWatchlistGroup(categoryName);
+  //     fetchCategories();
+  //     handleCloseAddCategoryModal();
+  //   } catch (error) {
+  //     console.error("Error adding category:", error);
+  //   }
+  // };
 
-  const fetchCategories = async () => {
-    queryClient.invalidateQueries({ queryKey: ["categories"] });
-  };
+  const addCategoryMutation = useAddCategory();
+
+const handleAddCategory = async (categoryName: string) => {
+  try {
+    await addCategoryMutation.mutateAsync(categoryName); // Trigger the mutation
+    handleCloseAddCategoryModal(); // Close the modal after successful addition
+  } catch (error) {
+    console.error("Error adding category:", error);
+  }
+};
+
+  // const fetchCategories = async () => {
+  //   queryClient.invalidateQueries({ queryKey: ["categories"] });
+  // };
 
   useEffect(() => {
     if (fetchedMovies) {
