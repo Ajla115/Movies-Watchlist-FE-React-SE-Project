@@ -39,7 +39,7 @@ export const useNotificationToggle = (userId: string) => {
       queryClient.invalidateQueries({
         queryKey: ["notificationStatus", userId],
       });
-      toast.success("Notification status updated!");
+      toast.success("Notification status updated to " + !emailEnabled);
     },
     onError: (error: Error) => {
       console.error("Failed to update notification status:", error);
