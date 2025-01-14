@@ -9,13 +9,15 @@ interface NotificationButtonProps {
 const NotificationButton: React.FC<NotificationButtonProps> = ({ userId }) => {
   const { emailEnabled, toggleNotification } = useNotificationToggle(userId);
 
-  const handleToggle = async () => {
-    try {
-      await toggleNotification.mutateAsync();
-    } catch (error) {
-      console.error("Error toggling notification:", error);
-    }
-  };
+
+const handleToggle = async () => {
+  try {
+    await toggleNotification.mutateAsync();
+  } catch (error) {
+    console.error("Error toggling notification:", error);
+  }
+};
+
 
   return (
     <Box display="flex" alignItems="center" gap={2}>

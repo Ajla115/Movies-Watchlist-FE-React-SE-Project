@@ -5,19 +5,8 @@ import {
   loginUserApi,
   toggleNotificationStatus,
 } from "../api/userApi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export const useGetNotificationStatus = (userId: string) => {
-  const { data, error, isLoading } = useQuery<boolean, Error>({
-    queryKey: ["notificationStatus", userId],
-    queryFn: () => getNotificationStatus(userId),
-    enabled: !!userId,
-  });
-  if (error) {
-    toast.error("Failed to fetch notification status.");
-  }
-  return { data, isLoading, error };
-};
 
 export const useLoginUser = () => {
   return useMutation({
@@ -29,30 +18,53 @@ export const useLoginUser = () => {
 };
 
 
-  
+
+
 export const useNotificationToggle = (userId: string) => {
-    const queryClient = useQueryClient();
-    const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
-  
-    const toggleNotification = useMutation({
-      mutationFn: () => toggleNotificationStatus(userId),
-      onSuccess: () => {
-        setEmailEnabled((prev) => {
-          toast.success(
-            `Notification status was ${prev ? "On" : "Off"} and now it is being updated.`
-          );
-          return !prev; 
-        });
+  const queryClient = useQueryClient();
+  const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
+
+  // Fetch the initial notification status when the hook is used
+  useEffect(() => {
+    const fetchNotificationStatus = async () => {
+      try {
+        const status = await getNotificationStatus(userId);
+        setEmailEnabled(status);
+      } catch (error) {
+        console.error("Failed to fetch initial notification status:", error);
+        toast.error("Failed to load notification status.");
+      }
+    };
+
+    if (userId) {
+      fetchNotificationStatus();
+    }
+  }, [userId]);
+
+  const toggleNotification = useMutation({
+    mutationFn: () => toggleNotificationStatus(userId),
+    onSuccess: async () => {
+      try {
+        const currentStatus = await getNotificationStatus(userId);
+        toast.success(
+          `Notification status was ${currentStatus ? "On" : "Off"} and now it is being updated.`
+        );
+        setEmailEnabled(!currentStatus); // Toggle the local state after showing the toast
         queryClient.invalidateQueries({
           queryKey: ["notificationStatus", userId],
         });
-      },
-      onError: (error: Error) => {
-        console.error("Failed to update notification status:", error);
+      } catch (error) {
+        console.error("Failed to refetch notification status after toggle:", error);
         toast.error("Failed to update notification status.");
-      },
-    });
-  
-    return { emailEnabled, toggleNotification };
-  };
-  
+      }
+    },
+    onError: (error: Error) => {
+      console.error("Failed to update notification status:", error);
+      toast.error("Failed to update notification status.");
+    },
+  });
+
+  return { emailEnabled, toggleNotification };
+};
+
+
