@@ -29,23 +29,28 @@ export const useLoginUser = () => {
 };
 
 export const useNotificationToggle = (userId: string) => {
-  const queryClient = useQueryClient();
-  const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
+    const queryClient = useQueryClient();
+    const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
+  
+    const toggleNotification = useMutation({
+      mutationFn: () => toggleNotificationStatus(userId),
+      onSuccess: () => {
+        setEmailEnabled((prev) => {
+          const newStatus = !prev;
+          toast.success(`Notification status updated to ${newStatus ? "On" : "Off"}`);
+          return newStatus;
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["notificationStatus", userId],
+        });
+      },
+      onError: (error: Error) => {
+        console.error("Failed to update notification status:", error);
+        toast.error("Failed to update notification status.");
+      },
+    });
+  
+    return { emailEnabled, toggleNotification };
+  };
+  
 
-  const toggleNotification = useMutation({
-    mutationFn: () => toggleNotificationStatus(userId),
-    onSuccess: () => {
-      setEmailEnabled((prev) => !prev);
-      queryClient.invalidateQueries({
-        queryKey: ["notificationStatus", userId],
-      });
-      toast.success("Notification status updated to " + !emailEnabled);
-    },
-    onError: (error: Error) => {
-      console.error("Failed to update notification status:", error);
-      toast.error("Failed to update notification status.");
-    },
-  });
-
-  return { emailEnabled, toggleNotification };
-};
