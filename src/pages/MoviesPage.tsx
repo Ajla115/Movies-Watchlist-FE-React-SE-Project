@@ -87,6 +87,8 @@ const MoviesPage: React.FC = () => {
     try {
       await deleteCategoryMutation.mutateAsync({ groupId, deleteMovies });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["movies", userId] }); // Refetch movies
+
       handleCloseDeleteCategoryModal();
     } catch (error) {
       console.error("Error deleting category:", error);
