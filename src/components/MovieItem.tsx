@@ -16,12 +16,13 @@ import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMarkAsWatched, deleteMovie, editMovie } from "../api/movieApi";
+import { deleteMovie, editMovie } from "../api/movieApi";
 import { toast } from "react-toastify";
+import { useMarkAsWatched } from "../hooks/useMovie";
 
 interface MovieItemProps {
   movie: Movie;
-  categories: WatchlistGroup[]; // Pass categories to EditMovieModal
+  categories: WatchlistGroup[]; 
   userId: string;
   onMarkAsWatched: (movieId: string) => void;
 }
@@ -32,7 +33,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
   const [isWatchModalOpen, setWatchModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+ 
 
   const handleOpenWatchModal = () => {
     if (movie.status === "Watched") {
@@ -42,12 +43,29 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
     setWatchModalOpen(true);
   };
 
-  const handleConfirmWatch = () => {
-    markAsWatched({ userId, movieId: movie.movieId.toString() }); // Pass userId and movieId correctly
-    setWatchModalOpen(false);
-    onMarkAsWatched(movie.movieId.toString()); // Call the callback function after marking as watched
-    toast.success(`Movie "${movie.title}" is marked as watched.`);
-  };
+  // const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+
+  // const handleConfirmWatch = () => {
+  //   markAsWatched({ userId, movieId: movie.movieId.toString() }); // Pass userId and movieId correctly
+  //   setWatchModalOpen(false);
+  //   onMarkAsWatched(movie.movieId.toString()); // Call the callback function after marking as watched
+  //   toast.success(`Movie "${movie.title}" is marked as watched.`);
+  // };
+
+  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+
+const handleConfirmWatch = () => {
+  markAsWatched(
+    { userId, movieId: movie.movieId.toString() }, 
+    {
+      onSuccess: () => {
+        setWatchModalOpen(false);
+        onMarkAsWatched(movie.movieId.toString()); 
+      },
+    }
+  );
+};
+
   
 
   const deleteMovieMutation = useMutation({

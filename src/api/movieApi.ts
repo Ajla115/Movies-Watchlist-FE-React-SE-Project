@@ -34,56 +34,31 @@ export const deleteMovie = async (movieId: string): Promise<void> => {
   await axios.delete(`${API_BASE_URL}/movies/delete/${movieId}`);
 };
 
-export const filterMoviesByStatus = async (userId: string, status: string): Promise<Movie[]> => {
-
-    const response = await axios.get(`${API_BASE_URL}/movies/filter/status/user/${userId}`, {
-      params: { status }
-    });
-    return response.data;
-  };
 
 
-export const filterMoviesByWatchlistOrder = async (userId: string, order: string): Promise<Movie[]> => {
-  const response = await axios.get(`${API_BASE_URL}/movies/filter/watchlist/user/${userId}`, {
-    params: { order },
-  });
-  return response.data;
-};
+// export const useMarkAsWatched = (movieTitle: string) => {
+//   const queryClient = useQueryClient();
 
+//   return useMutation({
+//     mutationFn: async ({ userId, movieId }: { userId: string; movieId: string }) => {
+//       await axios.put(`${API_BASE_URL}/movies/mark-watched/${userId}/${movieId}`);
+//     },
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ["movies"] });
+//     },
+//     onError: (error: any) => {
+//       if (error.response?.status === 400) {
+//         toast.warning(error.response.data);
+//       } else {
+//         console.error("Error marking movie as watched:", error);
+//         toast.error("Failed to mark the movie as watched");
+//       }
+//     },
+//   });
+// };
 
-export const filterMoviesByGenre = async (userId: string, genreName: string): Promise<Movie[]> => {
-  const response = await axios.get(`${API_BASE_URL}/movies/filter/genre/user/${userId}`, {
-    params: { genreName },
-  });
-  return response.data;
-};
-
-export const sortMoviesByWatchlistOrder = async (userId: string, order: string): Promise<Movie[]> => {
-  const response = await axios.get(`${API_BASE_URL}/movies/sort/watchlist/user/${userId}`, {
-    params: { order },
-  });
-  return response.data;
-};
-
-export const useMarkAsWatched = (movieTitle: string) => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ userId, movieId }: { userId: string; movieId: string }) => {
-      await axios.put(`${API_BASE_URL}/movies/mark-watched/${userId}/${movieId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
-    },
-    onError: (error: any) => {
-      if (error.response?.status === 400) {
-        toast.warning(error.response.data);
-      } else {
-        console.error("Error marking movie as watched:", error);
-        toast.error("Failed to mark the movie as watched");
-      }
-    },
-  });
+export const markAsWatchedApi = async (userId: string, movieId: string): Promise<void> => {
+  await axios.put(`${API_BASE_URL}/movies/mark-watched/${userId}/${movieId}`);
 };
 
 
