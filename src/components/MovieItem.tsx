@@ -15,10 +15,10 @@ import { WatchlistGroup } from "../types/WatchlistGroup";
 import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { deleteMovie, editMovie } from "../api/movieApi";
+import {  useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useMarkAsWatched } from "../hooks/useMovie";
+import { useDeleteMovie, useEditMovie } from "../hooks/useMovie";
 
 interface MovieItemProps {
   movie: Movie;
@@ -43,14 +43,6 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
     setWatchModalOpen(true);
   };
 
-  // const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
-
-  // const handleConfirmWatch = () => {
-  //   markAsWatched({ userId, movieId: movie.movieId.toString() }); // Pass userId and movieId correctly
-  //   setWatchModalOpen(false);
-  //   onMarkAsWatched(movie.movieId.toString()); // Call the callback function after marking as watched
-  //   toast.success(`Movie "${movie.title}" is marked as watched.`);
-  // };
 
   const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
 
@@ -66,40 +58,27 @@ const handleConfirmWatch = () => {
   );
 };
 
-  
+const deleteMovieMutation = useDeleteMovie();
 
-  const deleteMovieMutation = useMutation({
-    mutationFn: async () => deleteMovie(movie.movieId.toString()),
+const handleDeleteMovie = () => {
+  deleteMovieMutation.mutate(movie.movieId.toString(), {
     onSuccess: () => {
-      toast.success("Movie deleted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
-      handleCloseDeleteModal();
-    },
-    onError: (error: any) => {
-      console.error("Error deleting movie:", error);
-      toast.error("Failed to delete the movie");
+      handleCloseDeleteModal(); 
     },
   });
+};
 
-  const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
-    updateMovieMutation.mutate({ movieId: movieId.toString(), movieData });
-  };
 
-  const updateMovieMutation = useMutation({
-    mutationFn: async ({ movieId, movieData }: { movieId: string; movieData: AddMovieDTO }) => {
-      return editMovie(movieId, movieData);
-    },
+const updateMovieMutation = useEditMovie();
+
+const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
+  updateMovieMutation.mutate({ movieId: movieId.toString(), movieData }, {
     onSuccess: () => {
-      toast.success("Movie updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] }); 
-      handleCloseEditModal();
-    },
-    onError: (error: any) => {
-      console.error("Error updating movie:", error);
-      toast.error("Failed to update the movie");
+      handleCloseEditModal(); 
     },
   });
+};
+
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
@@ -275,8 +254,8 @@ const handleConfirmWatch = () => {
         open={isDeleteModalOpen}
         movieTitle={movie.title}
         onClose={handleCloseDeleteModal}
-        onDelete={() => deleteMovieMutation.mutate()}
-      />
+        onDelete={handleDeleteMovie} 
+        />
     </>
   );
 };

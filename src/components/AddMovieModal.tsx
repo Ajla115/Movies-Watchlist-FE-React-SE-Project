@@ -180,7 +180,6 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({
         ],
       };
       await onAddMovie(moviePayload);
-      toast.success("Movie successfully added!");
       handleClose();
     } catch (error) {
       console.error("Failed to add movie:", error);
