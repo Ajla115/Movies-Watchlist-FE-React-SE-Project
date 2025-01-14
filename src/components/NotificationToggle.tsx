@@ -20,7 +20,7 @@ const NotificationButton: React.FC<NotificationButtonProps> = ({ userId }) => {
   return (
     <Box display="flex" alignItems="center" gap={2}>
       <Typography>
-        Notifications: {emailEnabled ? "Off" : "On"}
+        Notifications: {emailEnabled ? "On" : "Off"}
       </Typography>
       <Button
         variant="contained"

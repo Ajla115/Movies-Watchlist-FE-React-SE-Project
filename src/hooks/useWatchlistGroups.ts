@@ -98,6 +98,7 @@ export const useEditCategory = () => {
       editWatchlistGroup(groupId, newName),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["movies"] });
       toast.success("Category renamed successfully!");
     },
     onError: (error: Error) => {
