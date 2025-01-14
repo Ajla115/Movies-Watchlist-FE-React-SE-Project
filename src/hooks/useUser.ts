@@ -28,6 +28,8 @@ export const useLoginUser = () => {
   });
 };
 
+
+  
 export const useNotificationToggle = (userId: string) => {
     const queryClient = useQueryClient();
     const [emailEnabled, setEmailEnabled] = useState<boolean>(false);
@@ -36,9 +38,10 @@ export const useNotificationToggle = (userId: string) => {
       mutationFn: () => toggleNotificationStatus(userId),
       onSuccess: () => {
         setEmailEnabled((prev) => {
-          const newStatus = !prev;
-          toast.success(`Notification status updated to ${newStatus ? "On" : "Off"}`);
-          return newStatus;
+          toast.success(
+            `Notification status was ${prev ? "On" : "Off"} and now it is being updated.`
+          );
+          return !prev; 
         });
         queryClient.invalidateQueries({
           queryKey: ["notificationStatus", userId],
@@ -53,4 +56,3 @@ export const useNotificationToggle = (userId: string) => {
     return { emailEnabled, toggleNotification };
   };
   
-
