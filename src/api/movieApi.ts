@@ -2,12 +2,6 @@ import axios from "axios";
 import { Movie, AddMovieDTO } from "../types/Movie";
 import { API_BASE_URL } from '../constants';
 
-
-
-
-
-
-
 export const getFilteredMovies = async (
   userId: string,
   filters: {
@@ -20,7 +14,6 @@ export const getFilteredMovies = async (
 ): Promise<Movie[]> => {
   const queryParams: { [key: string]: string | undefined } = {};
 
-  // Only add parameters that are defined
   if (filters.genre) queryParams.genre = filters.genre;
   if (filters.status) queryParams.status = filters.status;
   if (filters.watchlistOrder) queryParams.watchlistOrder = filters.watchlistOrder;
@@ -28,7 +21,7 @@ export const getFilteredMovies = async (
   if (filters.categoryId) queryParams.categoryId = filters.categoryId;
 
   const response = await axios.get(`${API_BASE_URL}/movies/filter/user/${userId}`, {
-    params: queryParams, // Send query parameters only for defined filters
+    params: queryParams, 
   });
 
   if (response.status !== 200) {
@@ -37,8 +30,6 @@ export const getFilteredMovies = async (
 
   return response.data;
 };
-
-
 
 
 export const deleteMovie = async (movieId: string): Promise<void> => {

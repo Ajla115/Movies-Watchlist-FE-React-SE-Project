@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useWatchlistGroups,
   useMoviesByCategory,
@@ -28,7 +28,11 @@ import { List, Button } from "@mui/material";
 import DeleteCategoryModal from "../components/DeleteCategoryModal";
 import EditCategoryModal from "../components/EditCategoryModal";
 import { toast } from "react-toastify";
-import {  useGetMoviesByUser,   useFilteredMovies, useAddMovie } from "../hooks/useMovie";
+import {
+  useGetMoviesByUser,
+  useFilteredMovies,
+  useAddMovie,
+} from "../hooks/useMovie";
 
 const MoviesPage: React.FC = () => {
   const location = useLocation();
@@ -87,8 +91,6 @@ const MoviesPage: React.FC = () => {
   ) => {
     try {
       await deleteCategoryMutation.mutateAsync({ groupId, deleteMovies });
-      //queryClient.invalidateQueries({ queryKey: ["categories"] });
-      //queryClient.invalidateQueries({ queryKey: ["movies", userId] }); 
 
       handleCloseDeleteCategoryModal();
     } catch (error) {
@@ -108,23 +110,12 @@ const MoviesPage: React.FC = () => {
 
   const editCategoryMutation = useEditCategory();
 
-  // const handleEditCategory = async (groupId: number, newName: string) => {
-  //   try {
-  //     await editCategoryMutation.mutateAsync({ groupId, newName });
-  //     fetchCategories();
-  //     handleCloseEditCategoryModal();
-  //   } catch (error) {
-  //     console.error("Error editing category:", error);
-  //   }
-  // };
-
   const handleEditCategory = (groupId: number, newName: string) => {
     editCategoryMutation.mutate(
       { groupId, newName },
       {
         onSuccess: () => {
-          handleCloseEditCategoryModal(); // Close modal on success
-          //queryClient.invalidateQueries({ queryKey: ["categories"] }); // Refetch categories
+          handleCloseEditCategoryModal();
         },
         onError: (error) => {
           console.error("Error editing category:", error);
@@ -133,7 +124,6 @@ const MoviesPage: React.FC = () => {
       }
     );
   };
-  
 
   const genreOptions = [
     "Action",
@@ -193,75 +183,17 @@ const MoviesPage: React.FC = () => {
     setFiltersApplied(false);
   };
 
-  // const {
-  //   data: allMovies,
-  //   isLoading: isAllMoviesLoading,
-  //   error: allMoviesError,
-  // } = useQuery<Movie[]>({
-  //   queryKey: ["movies", userId],
-  //   queryFn: () => getMoviesByUser(userId),
-  //   enabled: !!userId && !filtersApplied,
-  // });
+  const {
+    data: allMovies,
+    isLoading: isAllMoviesLoading,
+    error: allMoviesError,
+  } = useGetMoviesByUser(userId, filtersApplied);
 
-  // Use the hook
-// const {
-//   data: allMovies,
-//   isLoading: isAllMoviesLoading,
-//   error: allMoviesError,
-// } = useGetMoviesByUser(userId, filtersApplied);
-
-//   const {
-//     data: fetchedMovies,
-//     isLoading,
-//     error,
-//   } = useQuery<Movie[]>({
-//     queryKey: [
-//       "movies",
-//       userId,
-//       appliedFilters.genre,
-//       appliedFilters.status,
-//       appliedFilters.watchlistOrder,
-//       appliedFilters.sort,
-//       appliedFilters.categoryId,
-//     ],
-//     queryFn: () =>
-//       getFilteredMovies(userId, {
-//         genre: appliedFilters.genre || undefined,
-//         status: appliedFilters.status || undefined,
-//         watchlistOrder: appliedFilters.watchlistOrder || undefined,
-//         sort:
-//           appliedFilters.sort !== "default" ? appliedFilters.sort : undefined,
-//         categoryId: appliedFilters.categoryId || undefined,
-//       }),
-
-//     enabled: filtersApplied && !!userId,
-//   });
-
-
-
-
-  // useEffect(() => {
-  //   if (fetchedMovies && fetchedMovies.length > 0) {
-  //     setMovies(fetchedMovies);
-  //   } else if (allMovies && allMovies.length > 0) {
-  //     setMovies(allMovies);
-  //   }
-  // }, [fetchedMovies, allMovies]);
-
-  // useEffect(() => {
-  //   if (fetchedMovies && fetchedMovies.length > 0) {
-  //     setMovies(fetchedMovies);
-  //   } else if (fetchedMovies?.length === 0) {
-  //     setMovies([]);
-  //   } else if (allMovies && !filtersApplied) {
-  //     setMovies(allMovies);
-  //   }
-  // }, [fetchedMovies, allMovies, filtersApplied]);
-
-  const { data: allMovies, isLoading: isAllMoviesLoading, error: allMoviesError } = useGetMoviesByUser(userId, filtersApplied);
-
-
-  const { data: fetchedMovies, isLoading, error } = useFilteredMovies(userId, appliedFilters, filtersApplied);
+  const {
+    data: fetchedMovies,
+    isLoading,
+    error,
+  } = useFilteredMovies(userId, appliedFilters, filtersApplied);
 
   useEffect(() => {
     if (fetchedMovies && fetchedMovies.length > 0) {
@@ -272,8 +204,6 @@ const MoviesPage: React.FC = () => {
       setMovies(allMovies);
     }
   }, [fetchedMovies, allMovies, filtersApplied]);
-  
-
 
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
 
@@ -285,44 +215,31 @@ const MoviesPage: React.FC = () => {
     setIsAddCategoryModalOpen(false);
   };
 
-
   const addCategoryMutation = useAddCategory();
 
-const handleAddCategory = async (categoryName: string) => {
-  try {
-    await addCategoryMutation.mutateAsync(categoryName); 
-    handleCloseAddCategoryModal(); 
-  } catch (error) {
-    console.error("Error adding category:", error);
-  }
-};
-
-  // const fetchCategories = async () => {
-  //   queryClient.invalidateQueries({ queryKey: ["categories"] });
-  // };
-
-  // useEffect(() => {
-  //   if (fetchedMovies) {
-  //     setMovies(fetchedMovies);
-  //   }
-  // }, [fetchedMovies]);
+  const handleAddCategory = async (categoryName: string) => {
+    try {
+      await addCategoryMutation.mutateAsync(categoryName);
+      handleCloseAddCategoryModal();
+    } catch (error) {
+      console.error("Error adding category:", error);
+    }
+  };
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
   };
 
-
-
   const addMovieMutation = useAddMovie(userId);
 
-const handleAddMovie = async (newMovie: AddMovieDTO) => {
-  try {
-    await addMovieMutation.mutateAsync(newMovie);
-  } catch (error) {
-    console.error("Error adding movie:", error);
-    throw error;
-  }
-};
+  const handleAddMovie = async (newMovie: AddMovieDTO) => {
+    try {
+      await addMovieMutation.mutateAsync(newMovie);
+    } catch (error) {
+      console.error("Error adding movie:", error);
+      throw error;
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -605,7 +522,7 @@ const handleAddMovie = async (newMovie: AddMovieDTO) => {
                   variant="contained"
                   onClick={handleOpenEditCategoryModal}
                   sx={{
-                    backgroundColor: "#2196F3", // Blue color for edit button
+                    backgroundColor: "#2196F3",
                     color: "#FFFFFF",
                     "&:hover": {
                       backgroundColor: "#1769AA",

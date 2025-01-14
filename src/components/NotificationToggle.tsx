@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button, Typography, Box } from "@mui/material";
-import { toast } from "react-toastify";
 import { useNotificationToggle } from "../hooks/useUser"; 
 
 interface NotificationButtonProps {

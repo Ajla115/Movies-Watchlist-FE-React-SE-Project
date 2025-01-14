@@ -15,25 +15,28 @@ import { WatchlistGroup } from "../types/WatchlistGroup";
 import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
-import {  useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useMarkAsWatched } from "../hooks/useMovie";
 import { useDeleteMovie, useEditMovie } from "../hooks/useMovie";
 
 interface MovieItemProps {
   movie: Movie;
-  categories: WatchlistGroup[]; 
+  categories: WatchlistGroup[];
   userId: string;
   onMarkAsWatched: (movieId: string) => void;
 }
 
-const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMarkAsWatched }) => {
+const MovieItem: React.FC<MovieItemProps> = ({
+  movie,
+  userId,
+  categories,
+  onMarkAsWatched,
+}) => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isWatchModalOpen, setWatchModalOpen] = useState(false);
   const queryClient = useQueryClient();
-
- 
 
   const handleOpenWatchModal = () => {
     if (movie.status === "Watched") {
@@ -43,42 +46,42 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie, userId, categories, onMark
     setWatchModalOpen(true);
   };
 
-
   const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
 
-const handleConfirmWatch = () => {
-  markAsWatched(
-    { userId, movieId: movie.movieId.toString() }, 
-    {
+  const handleConfirmWatch = () => {
+    markAsWatched(
+      { userId, movieId: movie.movieId.toString() },
+      {
+        onSuccess: () => {
+          setWatchModalOpen(false);
+          onMarkAsWatched(movie.movieId.toString());
+        },
+      }
+    );
+  };
+
+  const deleteMovieMutation = useDeleteMovie();
+
+  const handleDeleteMovie = () => {
+    deleteMovieMutation.mutate(movie.movieId.toString(), {
       onSuccess: () => {
-        setWatchModalOpen(false);
-        onMarkAsWatched(movie.movieId.toString()); 
+        handleCloseDeleteModal();
       },
-    }
-  );
-};
+    });
+  };
 
-const deleteMovieMutation = useDeleteMovie();
+  const updateMovieMutation = useEditMovie();
 
-const handleDeleteMovie = () => {
-  deleteMovieMutation.mutate(movie.movieId.toString(), {
-    onSuccess: () => {
-      handleCloseDeleteModal(); 
-    },
-  });
-};
-
-
-const updateMovieMutation = useEditMovie();
-
-const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
-  updateMovieMutation.mutate({ movieId: movieId.toString(), movieData }, {
-    onSuccess: () => {
-      handleCloseEditModal(); 
-    },
-  });
-};
-
+  const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
+    updateMovieMutation.mutate(
+      { movieId: movieId.toString(), movieData },
+      {
+        onSuccess: () => {
+          handleCloseEditModal();
+        },
+      }
+    );
+  };
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
@@ -190,11 +193,11 @@ const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
                 >
                   Categories:
                 </Typography>
-                {Array.isArray(movie.watchlistGroupNames) && movie.watchlistGroupNames.length > 0
-    ? movie.watchlistGroupNames.join(", ")
-    : "No categories"}
+                {Array.isArray(movie.watchlistGroupNames) &&
+                movie.watchlistGroupNames.length > 0
+                  ? movie.watchlistGroupNames.join(", ")
+                  : "No categories"}
               </Box>
-
             </Box>
           }
         />
@@ -226,8 +229,7 @@ const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
         </ListItemSecondaryAction>
       </ListItem>
 
-
-<EditMovieModal
+      <EditMovieModal
         open={isEditModalOpen}
         movie={{
           movieId: movie.movieId,
@@ -236,7 +238,7 @@ const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
           status: movie.status,
           watchlistOrder: movie.watchlistOrder,
           genreName: movie.genre.name,
-          watchlistGroupNames: movie.watchlistGroupNames 
+          watchlistGroupNames: movie.watchlistGroupNames,
         }}
         categories={categories}
         onClose={handleCloseEditModal}
@@ -254,8 +256,8 @@ const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
         open={isDeleteModalOpen}
         movieTitle={movie.title}
         onClose={handleCloseDeleteModal}
-        onDelete={handleDeleteMovie} 
-        />
+        onDelete={handleDeleteMovie}
+      />
     </>
   );
 };

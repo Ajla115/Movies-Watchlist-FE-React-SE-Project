@@ -12,7 +12,6 @@ import {
   Typography,
 } from "@mui/material";
 import { WatchlistGroup } from "../types/WatchlistGroup";
-import { toast } from "react-toastify";
 
 interface DeleteCategoryModalProps {
   open: boolean;
@@ -38,8 +37,8 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
 
     onDeleteCategory(selectedCategoryId as number, deleteMovies);
     onClose();
-    setSelectedCategoryId(""); // Reset selection
-    setError(""); // Clear error
+    setSelectedCategoryId(""); 
+    setError(""); 
   };
 
   return (
@@ -73,7 +72,7 @@ const DeleteCategoryModal: React.FC<DeleteCategoryModalProps> = ({
             value={selectedCategoryId}
             onChange={(e) => {
               setSelectedCategoryId(e.target.value as number);
-              setError(""); // Clear error on valid selection
+              setError(""); 
             }}
             label="Select Category"
             sx={{

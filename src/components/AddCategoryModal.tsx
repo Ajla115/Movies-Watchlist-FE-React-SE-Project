@@ -16,27 +16,31 @@ interface AddCategoryModalProps {
   onAddCategory: (categoryName: string) => void;
 }
 
-const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ open, onClose, onAddCategory }) => {
+const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
+  open,
+  onClose,
+  onAddCategory,
+}) => {
   const [categoryName, setCategoryName] = useState("");
-  const [error, setError] = useState<string | null>(null); // Error state for empty input
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryName.trim()) {
-      setError("Category name cannot be empty."); // Set error if input is empty
-      toast.error("Category name cannot be empty."); // Show toast error message
+      setError("Category name cannot be empty.");
+      toast.error("Category name cannot be empty.");
       return;
     }
     onAddCategory(categoryName);
-    setCategoryName(""); // Clear input field
-    setError(null); // Clear error state
+    setCategoryName("");
+    setError(null);
     onClose();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCategoryName(e.target.value);
     if (error) {
-      setError(null); // Clear error if user starts typing
+      setError(null);
     }
   };
 
