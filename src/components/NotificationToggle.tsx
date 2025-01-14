@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Button, Typography, Box } from "@mui/material";
 import { toast } from "react-toastify";
-import { useNotificationToggle, getNotificationStatus } from "../api/userApi"; 
+import { useNotificationToggle } from "../hooks/useUser"; 
 
 interface NotificationButtonProps {
   userId: string;
 }
 
 const NotificationButton: React.FC<NotificationButtonProps> = ({ userId }) => {
-  const { emailEnabled,toggleNotification } = useNotificationToggle();
+  const { emailEnabled, toggleNotification } = useNotificationToggle(userId);
 
   const handleToggle = async () => {
     try {
       await toggleNotification.mutateAsync();
-      toast.success(`Notifications ${emailEnabled ? "disabled" : "enabled"} successfully!`);
     } catch (error) {
-      toast.error("Failed to update notification status.");
+      console.error("Error toggling notification:", error);
     }
   };
 
