@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -13,57 +13,57 @@ import {
   SelectChangeEvent,
   Typography,
   Box,
-} from '@mui/material';
-import { toast } from 'react-toastify'; 
-import { AddMovieDTO } from '../types/Movie';
-import { suggestGenre } from '../api/genreApi'; 
+} from "@mui/material";
+import { toast } from "react-toastify";
+import { AddMovieDTO } from "../types/Movie";
+import { useSuggestGenre } from "../hooks/useGenre";
 import { WatchlistGroup } from "../types/WatchlistGroup";
 
 interface AddMovieModalProps {
   onAddMovie: (movie: AddMovieDTO) => void;
-  categories: WatchlistGroup[]; // Added categories prop for existing categories
-
+  categories: WatchlistGroup[];
 }
 
 const initialMovieState: AddMovieDTO = {
-  title: '',
-  description: '',
-  status: 'To Watch',
-  watchlistOrder: '',
-  genreName: '',
-  watchlistGroupNames: [], // Added watchlistGroupNames to track selected/new categories
-
+  title: "",
+  description: "",
+  status: "To Watch",
+  watchlistOrder: "",
+  genreName: "",
+  watchlistGroupNames: [],
 };
 
 const GENRES = [
-  'Action',
-  'Adventure',
-  'Animation',
-  'Biography',
-  'Comedy',
-  'Crime',
-  'Documentary',
-  'Drama',
-  'Family',
-  'Fantasy',
-  'Historical',
-  'Horror',
-  'Musical',
-  'Mystery',
-  'Romance',
-  'Science Fiction',
-  'Sports',
-  'Thriller',
-  'Western',
+  "Action",
+  "Adventure",
+  "Animation",
+  "Biography",
+  "Comedy",
+  "Crime",
+  "Documentary",
+  "Drama",
+  "Family",
+  "Fantasy",
+  "Historical",
+  "Horror",
+  "Musical",
+  "Mystery",
+  "Romance",
+  "Science Fiction",
+  "Sports",
+  "Thriller",
+  "Western",
 ];
 
-
-const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories }) => {
+const AddMovieModal: React.FC<AddMovieModalProps> = ({
+  onAddMovie,
+  categories,
+}) => {
   const [open, setOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newMovie, setNewMovie] = useState<AddMovieDTO>(initialMovieState);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Changed to string[]
-  const [newCategory, setNewCategory] = useState<string>(''); // State for new category name
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState<string>("");
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -77,22 +77,22 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
     let isValid = true;
 
     if (!newMovie.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
       isValid = false;
     }
 
     if (!newMovie.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = "Description is required";
       isValid = false;
     }
 
     if (!newMovie.watchlistOrder) {
-      newErrors.watchlistOrder = 'Watch order is required';
+      newErrors.watchlistOrder = "Watch order is required";
       isValid = false;
     }
 
     if (!newMovie.genreName) {
-      newErrors.genreName = 'Genre is required';
+      newErrors.genreName = "Genre is required";
       isValid = false;
     }
 
@@ -107,76 +107,63 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewMovie(prev => ({
+    setNewMovie((prev) => ({
       ...prev,
       [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
 
   const handleSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
-    setNewMovie(prev => ({
+    setNewMovie((prev) => ({
       ...prev,
       [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: '',
+        [name]: "",
       }));
     }
   };
 
   const handleCategoryChange = (e: SelectChangeEvent<string[]>) => {
-    const selectedValues = e.target.value as string[]; // Ensure it's a string[]
+    const selectedValues = e.target.value as string[];
     setSelectedCategories(selectedValues);
     if (errors.category) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        category: '',
+        category: "",
       }));
     }
   };
-  
 
-  // Handle new category input
   const handleNewCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewCategory(e.target.value);
     if (errors.category) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        category: '',
+        category: "",
       }));
     }
   };
 
-  const handleAISuggestion = async () => {
+  const suggestGenreMutation = useSuggestGenre();
+
+  const handleAISuggestion = () => {
     if (!newMovie.title.trim()) {
-      toast.error('Please fill in the movie title before using AI suggestion!');
+      toast.error("Please fill in the movie title before using AI suggestion!");
       return;
     }
-  
-    try {
-      const suggestedGenre = await suggestGenre(newMovie.title);
-  
-      if (suggestedGenre.startsWith("Error:")) {
-        toast.error(suggestedGenre);
-      } else {
-        toast.success(`AI recommended this genre: ${suggestedGenre}`, {
-          autoClose: 5000, 
-        });
-      }
-    } catch (error: any) {
-      toast.error(error.message || 'Something went wrong, please try again later.');
-    }
-  };
 
+    suggestGenreMutation.mutate(newMovie.title);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -193,13 +180,13 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
         ],
       };
       await onAddMovie(moviePayload);
-      toast.success('Movie successfully added!');
+      toast.success("Movie successfully added!");
       handleClose();
     } catch (error) {
-      console.error('Failed to add movie:', error);
-      setErrors(prev => ({
+      console.error("Failed to add movie:", error);
+      setErrors((prev) => ({
         ...prev,
-        submit: 'Failed to add movie. Please try again.',
+        submit: "Failed to add movie. Please try again.",
       }));
     }
   };
@@ -207,83 +194,81 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
   return (
     <>
       <Button
-  variant="contained"
-  onClick={handleOpen}
-  sx={{
-    backgroundColor: "#52B788", 
-    color: "#FFFFFF", 
-    "&:hover": {
-      backgroundColor: "#2D6A4F", 
-    },
-  }}
->
-  Add Movie Modal
-</Button>
-
-<Dialog
-  open={open}
-  onClose={handleClose}
-  maxWidth="sm"
-  fullWidth
-  sx={{
-    "& .MuiPaper-root": {
-      backgroundColor: "#FFFFFF", 
-      border: "2px solid #2D6A4F", 
-      borderRadius: "8px",
-    },
-  }}
->
-  <DialogTitle
-    sx={{
-      fontWeight: 900,
-      color: "#2D6A4F", 
-      textAlign: "center",
-    }}
-  >
-    ADD NEW MOVIE
-  </DialogTitle>
-  <form onSubmit={handleSubmit}>
-    <DialogContent>
-      {errors.submit && (
-        <Typography color="error" sx={{ mb: 2 }}>
-          {errors.submit}
-        </Typography>
-      )}
-      <TextField
-        fullWidth
-        margin="normal"
-        label="Title"
-        name="title"
-        value={newMovie.title}
-        onChange={handleInputChange}
-        error={!!errors.title}
-        helperText={errors.title}
-        placeholder='Enter movie title'
-        required
+        variant="contained"
+        onClick={handleOpen}
         sx={{
-          "& .MuiOutlinedInput-root": {
-            "& fieldset": {
-              borderColor: "#2D6A4F", 
-            },
-            "&:hover fieldset": {
-              borderColor: "#2D6A4F",
-            },
+          backgroundColor: "#52B788",
+          color: "#FFFFFF",
+          "&:hover": {
+            backgroundColor: "#2D6A4F",
           },
         }}
-      />
-       <FormControl fullWidth margin="normal" required>
+      >
+        Add Movie Modal
+      </Button>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth="sm"
+        fullWidth
+        sx={{
+          "& .MuiPaper-root": {
+            backgroundColor: "#FFFFFF",
+            border: "2px solid #2D6A4F",
+            borderRadius: "8px",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            fontWeight: 900,
+            color: "#2D6A4F",
+            textAlign: "center",
+          }}
+        >
+          ADD NEW MOVIE
+        </DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogContent>
+            {errors.submit && (
+              <Typography color="error" sx={{ mb: 2 }}>
+                {errors.submit}
+              </Typography>
+            )}
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Title"
+              name="title"
+              value={newMovie.title}
+              onChange={handleInputChange}
+              error={!!errors.title}
+              helperText={errors.title}
+              placeholder="Enter movie title"
+              required
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                },
+              }}
+            />
+            <FormControl fullWidth margin="normal" required>
               <InputLabel htmlFor="category-select">Select Category</InputLabel>
               <Select
                 id="category-select"
                 multiple
-                value={selectedCategories} // Pass string[] here
+                value={selectedCategories}
                 onChange={handleCategoryChange}
-                renderValue={(selected) =>
-                  selected.join(", ") // Display selected category names
-                }
+                renderValue={(selected) => selected.join(", ")}
               >
                 {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.name}> {/* Pass category.name */}
+                  <MenuItem key={category.id} value={category.name}>
                     {category.name}
                   </MenuItem>
                 ))}
@@ -294,7 +279,6 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
               )}
             </FormControl>
 
-            {/* New category input */}
             <Typography align="center" sx={{ my: 2 }}>
               OR
             </Typography>
@@ -316,175 +300,176 @@ const AddMovieModal: React.FC<AddMovieModalProps> = ({ onAddMovie, categories })
                 },
               }}
             />
-      <Box
-    sx={{
-      display: "flex",
-      justifyContent: "center", 
-      marginBottom: "2px", 
-    }}
-  >
-    <Button
-      variant="contained"
-      onClick={handleAISuggestion}
-      sx={{
-        backgroundColor: "#52B788", 
-        color: "#FFFFFF", 
-        "&:hover": {
-          backgroundColor: "#2D6A4F", 
-        },
-      }}
-    >
-      Let AI Suggest Genre for You
-    </Button>
-  </Box>
-      <TextField
-        fullWidth
-        margin="normal"
-        label="Description"
-        name="description"
-        value={newMovie.description}
-        onChange={handleInputChange}
-        multiline
-        rows={3}
-        error={!!errors.description}
-        helperText={errors.description}
-        placeholder='Enter movie description'
-        required
-        sx={{
-          "& .MuiOutlinedInput-root": {
-            "& fieldset": {
-              borderColor: "#2D6A4F", 
-            },
-            "&:hover fieldset": {
-              borderColor: "#2D6A4F",
-            },
-          },
-        }}
-      />
-      <FormControl fullWidth margin="normal" required>
-        <InputLabel htmlFor="watchlist-order-select">Watch Order</InputLabel>
-        <Select
-        id="watchlist-order-select" 
-          name="watchlistOrder"
-          value={newMovie.watchlistOrder}
-          onChange={handleSelectChange}
-          label="Watch Order"
-          placeholder='Select watch order'
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#2D6A4F",
-              },
-              "&:hover fieldset": {
-                borderColor: "#2D6A4F",
-              },
-            },
-          }}
-        >
-          <MenuItem
-            value="Next Up"
-            role="value"
-            sx={{
-              "&:hover": {
-                backgroundColor: "#E9F5EC", 
-              },
-            }}
-          >
-            Next Up
-          </MenuItem>
-          <MenuItem
-          role="value"
-            value="When I have time"
-            sx={{
-              "&:hover": {
-                backgroundColor: "#E9F5EC",
-              },
-            }}
-          >
-            When I have time
-          </MenuItem>
-          <MenuItem
-          role="value"
-            value="Someday"
-            sx={{
-              "&:hover": {
-                backgroundColor: "#E9F5EC",
-              },
-            }}
-          >
-            Someday
-          </MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl fullWidth margin="normal" required>
-        <InputLabel htmlFor="genre-select">Genre</InputLabel>
-        <Select
-         id="genre-select"
-          name="genreName"
-          value={newMovie.genreName}
-          onChange={handleSelectChange}
-          label="Genre"
-          placeholder='Select genre'
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: "#2D6A4F",
-              },
-              "&:hover fieldset": {
-                borderColor: "#2D6A4F",
-              },
-            },
-          }}
-        >
-          {GENRES.map((genre) => (
-            <MenuItem
-              key={genre}
-              value={genre}
-              role="value1"
+            <Box
               sx={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "2px",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={handleAISuggestion}
+                sx={{
+                  backgroundColor: "#52B788",
+                  color: "#FFFFFF",
+                  "&:hover": {
+                    backgroundColor: "#2D6A4F",
+                  },
+                }}
+              >
+                Let AI Suggest Genre for You
+              </Button>
+            </Box>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Description"
+              name="description"
+              value={newMovie.description}
+              onChange={handleInputChange}
+              multiline
+              rows={3}
+              error={!!errors.description}
+              helperText={errors.description}
+              placeholder="Enter movie description"
+              required
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "#2D6A4F",
+                  },
+                },
+              }}
+            />
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel htmlFor="watchlist-order-select">
+                Watch Order
+              </InputLabel>
+              <Select
+                id="watchlist-order-select"
+                name="watchlistOrder"
+                value={newMovie.watchlistOrder}
+                onChange={handleSelectChange}
+                label="Watch Order"
+                placeholder="Select watch order"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "#2D6A4F",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#2D6A4F",
+                    },
+                  },
+                }}
+              >
+                <MenuItem
+                  value="Next Up"
+                  role="value"
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#E9F5EC",
+                    },
+                  }}
+                >
+                  Next Up
+                </MenuItem>
+                <MenuItem
+                  role="value"
+                  value="When I have time"
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#E9F5EC",
+                    },
+                  }}
+                >
+                  When I have time
+                </MenuItem>
+                <MenuItem
+                  role="value"
+                  value="Someday"
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#E9F5EC",
+                    },
+                  }}
+                >
+                  Someday
+                </MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal" required>
+              <InputLabel htmlFor="genre-select">Genre</InputLabel>
+              <Select
+                id="genre-select"
+                name="genreName"
+                value={newMovie.genreName}
+                onChange={handleSelectChange}
+                label="Genre"
+                placeholder="Select genre"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "& fieldset": {
+                      borderColor: "#2D6A4F",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#2D6A4F",
+                    },
+                  },
+                }}
+              >
+                {GENRES.map((genre) => (
+                  <MenuItem
+                    key={genre}
+                    value={genre}
+                    role="value1"
+                    sx={{
+                      "&:hover": {
+                        backgroundColor: "#E9F5EC",
+                      },
+                    }}
+                  >
+                    {genre}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleClose}
+              sx={{
+                backgroundColor: "#F8D7DA",
+                color: "#D32F2F",
                 "&:hover": {
-                  backgroundColor: "#E9F5EC", 
+                  backgroundColor: "#D32F2F",
+                  color: "#FFFFFF",
                 },
               }}
             >
-              {genre}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </DialogContent>
-    <DialogActions>
-      <Button
-        onClick={handleClose}
-        sx={{
-          backgroundColor: "#F8D7DA", 
-          color: "#D32F2F", 
-          "&:hover": {
-            backgroundColor: "#D32F2F", 
-            color: "#FFFFFF",
-          },
-        }}
-      >
-        Cancel
-      </Button>
-      <Button
-        type="submit"
-        sx={{
-          backgroundColor: "#52B788", 
-          color: "#FFFFFF",
-          "&:hover": {
-            backgroundColor: "#2D6A4F", 
-          },
-        }}
-      >
-        Add Movie
-      </Button>
-    </DialogActions>
-  </form>
-</Dialog>
-
-</>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              sx={{
+                backgroundColor: "#52B788",
+                color: "#FFFFFF",
+                "&:hover": {
+                  backgroundColor: "#2D6A4F",
+                },
+              }}
+            >
+              Add Movie
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    </>
   );
 };
 
-export default AddMovieModal; 
+export default AddMovieModal;
