@@ -578,14 +578,17 @@ const MoviesPage: React.FC = () => {
           <Box>
             <Box>
             {movies.length > 0 ? (
-    <MovieList
-      movies={filteredMovies}
-      userId={userId}
-      categories={categories}
-      onMarkAsWatched={(movieId: string) =>
-        console.log("Marking movie", movieId, "as watched")
-      }
-    />
+   <MovieList
+   movies={allMovies ?? []} // Use empty array if allMovies is undefined
+
+   appliedFilters={appliedFilters}
+   userId={userId}
+   categories={categories}
+   onMarkAsWatched={(movieId: string) =>
+     console.log("Marking movie", movieId, "as watched")
+   }
+ />
+ 
   ) : (
     <Typography variant="h6" align="center" sx={{ mt: 4 }}>
       No movies found.
