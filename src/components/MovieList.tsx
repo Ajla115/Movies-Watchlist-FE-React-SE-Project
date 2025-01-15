@@ -38,4 +38,12 @@ const MovieList: React.FC<MovieListProps> = ({
   );
 };
 
-export default MovieList;
+export default React.memo(MovieList, (prevProps, nextProps) => {
+  return (
+    prevProps.movies === nextProps.movies &&
+    prevProps.categories === nextProps.categories &&
+    prevProps.userId === nextProps.userId
+  );
+});
+
+
