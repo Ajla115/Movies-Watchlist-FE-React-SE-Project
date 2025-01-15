@@ -192,6 +192,15 @@ const MoviesPage: React.FC = () => {
     // update state logic
   }, []);
 
+  useEffect(() => {
+    setAppliedFilters({
+      genre: genreFilter,
+      status: statusFilter,
+      watchlistOrder: watchlistOrderFilter,
+      sort: sortOption,
+      categoryId: selectedCategory,
+    });
+  }, [genreFilter, statusFilter, watchlistOrderFilter, sortOption, selectedCategory]);
 
 
   const {
