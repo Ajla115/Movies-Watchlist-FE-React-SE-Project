@@ -38,4 +38,9 @@ const MovieList: React.FC<MovieListProps> = ({
   );
 };
 
+
+
+
 export default MovieList;
+
+
