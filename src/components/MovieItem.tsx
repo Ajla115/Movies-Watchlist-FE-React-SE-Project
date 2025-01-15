@@ -9,28 +9,34 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import CheckIcon from "@mui/icons-material/Check"; 
+import CheckIcon from "@mui/icons-material/Check";
 import { Movie, AddMovieDTO } from "../types/Movie";
+import { WatchlistGroup } from "../types/WatchlistGroup";
 import EditMovieModal from "./EditMovieModal";
 import DeleteMovieModal from "./DeleteMovieModal";
 import ConfirmWatchModal from "./ConfirmWatchModal";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {useMarkAsWatched, deleteMovie, editMovie } from "../api/movieApi";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useMarkAsWatched } from "../hooks/useMovie";
+import { useDeleteMovie, useEditMovie } from "../hooks/useMovie";
 
 interface MovieItemProps {
   movie: Movie;
-  userId: string; 
+  categories: WatchlistGroup[];
+  userId: string;
   onMarkAsWatched: (movieId: string) => void;
 }
 
-const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
+const MovieItem: React.FC<MovieItemProps> = ({
+  movie,
+  userId,
+  categories,
+  onMarkAsWatched,
+}) => {
   const [isEditModalOpen, setEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [isWatchModalOpen, setWatchModalOpen] = useState(false); 
+  const [isWatchModalOpen, setWatchModalOpen] = useState(false);
   const queryClient = useQueryClient();
-
-  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
 
   const handleOpenWatchModal = () => {
     if (movie.status === "Watched") {
@@ -40,40 +46,42 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
     setWatchModalOpen(true);
   };
 
+  const { mutate: markAsWatched } = useMarkAsWatched(movie.title);
+
   const handleConfirmWatch = () => {
-    markAsWatched({ userId: movie.user.userId.toString(), movieId: movie.movieId.toString() });
-    setWatchModalOpen(false);
-    toast.success(`Movie "${movie.title}" is marked as watched.`);
+    markAsWatched(
+      { userId, movieId: movie.movieId.toString() },
+      {
+        onSuccess: () => {
+          setWatchModalOpen(false);
+          onMarkAsWatched(movie.movieId.toString());
+        },
+      }
+    );
   };
-  
 
-  const deleteMovieMutation = useMutation({
-    mutationFn: async () => deleteMovie(movie.movieId.toString()),
-    onSuccess: () => {
-      toast.success("Movie deleted successfully!");
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
-      handleCloseDeleteModal();
-    },
-    onError: (error: any) => {
-      console.error("Error deleting movie:", error);
-      toast.error("Failed to delete the movie");
-    },
-  });
+  const deleteMovieMutation = useDeleteMovie();
 
-  const updateMovieMutation = useMutation({
-    mutationFn: async ({ movieId, movieData }: { movieId: string, movieData: AddMovieDTO }) => {
-      return editMovie(movieId, movieData);
-    },
-    onSuccess: () => {
-      toast.success("Movie updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["movies"] });
-      handleCloseEditModal();
-    },
-    onError: (error: any) => {
-      console.error("Error updating movie:", error);
-      toast.error("Failed to update the movie");
-    },
-  });
+  const handleDeleteMovie = () => {
+    deleteMovieMutation.mutate(movie.movieId.toString(), {
+      onSuccess: () => {
+        handleCloseDeleteModal();
+      },
+    });
+  };
+
+  const updateMovieMutation = useEditMovie();
+
+  const handleEditMovie = (movieId: number, movieData: AddMovieDTO) => {
+    updateMovieMutation.mutate(
+      { movieId: movieId.toString(), movieData },
+      {
+        onSuccess: () => {
+          handleCloseEditModal();
+        },
+      }
+    );
+  };
 
   const handleOpenEditModal = () => setEditModalOpen(true);
   const handleCloseEditModal = () => setEditModalOpen(false);
@@ -97,7 +105,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
         }}
       >
         <ListItemText
-        disableTypography={true}
+          disableTypography={true}
           primary={
             <Typography
               component="span"
@@ -106,22 +114,22 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
                 fontWeight: "bold",
                 fontSize: "1.2rem",
                 marginBottom: "8px",
-                display: "block"
+                display: "block",
               }}
             >
               {movie.title}
             </Typography>
           }
           secondary={
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <Box sx={{ display: 'block' }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <Box sx={{ display: "block" }}>
                 <Typography
                   component="span"
                   sx={{
                     fontWeight: "bold",
                     fontSize: "1.1rem",
                     color: "#2D6A4F",
-                    marginRight: "8px"
+                    marginRight: "8px",
                   }}
                 >
                   Genre:
@@ -129,14 +137,14 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
                 {movie.genre.name}
               </Box>
 
-              <Box sx={{ display: 'block' }}>
+              <Box sx={{ display: "block" }}>
                 <Typography
                   component="span"
                   sx={{
                     fontWeight: "bold",
                     fontSize: "1.1rem",
                     color: "#2D6A4F",
-                    marginRight: "8px"
+                    marginRight: "8px",
                   }}
                 >
                   Description:
@@ -144,14 +152,14 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
                 {movie.description}
               </Box>
 
-              <Box sx={{ display: 'block' }}>
+              <Box sx={{ display: "block" }}>
                 <Typography
                   component="span"
                   sx={{
                     fontWeight: "bold",
                     fontSize: "1.1rem",
                     color: "#2D6A4F",
-                    marginRight: "8px"
+                    marginRight: "8px",
                   }}
                 >
                   Status:
@@ -159,19 +167,36 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
                 {movie.status}
               </Box>
 
-              <Box sx={{ display: 'block' }}>
+              <Box sx={{ display: "block" }}>
                 <Typography
                   component="span"
                   sx={{
                     fontWeight: "bold",
                     fontSize: "1.1rem",
                     color: "#2D6A4F",
-                    marginRight: "8px"
+                    marginRight: "8px",
                   }}
                 >
                   Watch Order:
                 </Typography>
                 {movie.watchlistOrder}
+              </Box>
+              <Box sx={{ display: "block" }}>
+                <Typography
+                  component="span"
+                  sx={{
+                    fontWeight: "bold",
+                    fontSize: "1.1rem",
+                    color: "#2D6A4F",
+                    marginRight: "8px",
+                  }}
+                >
+                  Categories:
+                </Typography>
+                {Array.isArray(movie.watchlistGroupNames) &&
+                movie.watchlistGroupNames.length > 0
+                  ? movie.watchlistGroupNames.join(", ")
+                  : "No categories"}
               </Box>
             </Box>
           }
@@ -181,7 +206,7 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
             edge="end"
             aria-label="mark-as-watched"
             sx={{ mr: 1, color: "green" }}
-            onClick={handleOpenWatchModal} 
+            onClick={handleOpenWatchModal}
           >
             <CheckIcon />
           </IconButton>
@@ -206,30 +231,33 @@ const MovieItem: React.FC<MovieItemProps> = ({ movie }) => {
 
       <EditMovieModal
         open={isEditModalOpen}
-        movie={movie}
+        movie={{
+          movieId: movie.movieId,
+          title: movie.title,
+          description: movie.description,
+          status: movie.status,
+          watchlistOrder: movie.watchlistOrder,
+          genreName: movie.genre.name,
+          watchlistGroupNames: movie.watchlistGroupNames,
+        }}
+        categories={categories}
         onClose={handleCloseEditModal}
-        onSave={(movieId, movieData) =>
-          updateMovieMutation.mutate({
-            movieId: movieId.toString(),
-            movieData
-          })
-        }
+        onSave={handleEditMovie}
       />
 
       <ConfirmWatchModal
         open={isWatchModalOpen}
         onClose={handleCloseWatchModal}
         movie={movie}
-        onConfirm={handleConfirmWatch} 
+        onConfirm={handleConfirmWatch}
       />
 
       <DeleteMovieModal
         open={isDeleteModalOpen}
         movieTitle={movie.title}
         onClose={handleCloseDeleteModal}
-        onDelete={() => deleteMovieMutation.mutate()} 
+        onDelete={handleDeleteMovie}
       />
-
     </>
   );
 };

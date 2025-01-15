@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -12,14 +12,22 @@ import {
   MenuItem,
   SelectChangeEvent,
   FormHelperText,
-} from '@mui/material';
-import { Movie, AddMovieDTO, MovieDTO } from '../types/Movie';
+  Typography,
+  Box,
+} from "@mui/material";
+import { AddMovieDTO } from "../types/Movie";
+import { WatchlistGroup } from "../types/WatchlistGroup";
+
+interface EditMovieDTO extends AddMovieDTO {
+  movieId: number;
+}
 
 interface EditMovieModalProps {
   open: boolean;
-  movie: Movie; 
+  movie: EditMovieDTO;
+  categories: WatchlistGroup[];
   onClose: () => void;
-  onSave: (movieId: number, movie: AddMovieDTO) => void; 
+  onSave: (movieId: number, movie: AddMovieDTO) => void;
 }
 
 interface ValidationErrors {
@@ -27,70 +35,99 @@ interface ValidationErrors {
   description?: string;
   genreName?: string;
   watchlistOrder?: string;
+  category?: string;
 }
 
 const GENRES = [
-  'Action',
-  'Adventure',
-  'Animation',
-  'Biography',
-  'Comedy',
-  'Crime',
-  'Documentary',
-  'Drama',
-  'Family',
-  'Fantasy',
-  'Historical',
-  'Horror',
-  'Musical',
-  'Mystery',
-  'Romance',
-  'Science Fiction',
-  'Sports',
-  'Thriller',
-  'Western',
+  "Action",
+  "Adventure",
+  "Animation",
+  "Biography",
+  "Comedy",
+  "Crime",
+  "Documentary",
+  "Drama",
+  "Family",
+  "Fantasy",
+  "Historical",
+  "Horror",
+  "Musical",
+  "Mystery",
+  "Romance",
+  "Science Fiction",
+  "Sports",
+  "Thriller",
+  "Western",
 ];
 
 const EditMovieModal: React.FC<EditMovieModalProps> = ({
   open,
   movie,
+  categories,
   onClose,
   onSave,
 }) => {
-  const [editedMovie, setEditedMovie] = useState<Movie>({ ...movie });
+  const [editedMovie, setEditedMovie] = useState<AddMovieDTO>({
+    title: movie.title,
+    description: movie.description,
+    status: movie.status,
+    watchlistOrder: movie.watchlistOrder,
+    genreName: movie.genreName,
+    watchlistGroupNames: movie.watchlistGroupNames,
+  });
+
+  const [newCategory, setNewCategory] = useState<string>("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [hasChanges, setHasChanges] = useState(false);
 
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    movie.watchlistGroupNames ? [...movie.watchlistGroupNames] : []
+  );
+
   useEffect(() => {
     setEditedMovie({
-      ...movie,
-      genre: movie.genre || { name: '' }, 
+      title: movie.title,
+      description: movie.description,
+      status: movie.status,
+      watchlistOrder: movie.watchlistOrder,
+      genreName: movie.genreName,
+      watchlistGroupNames: movie.watchlistGroupNames || [],
     });
+
+    setSelectedCategories(
+      movie.watchlistGroupNames ? [...movie.watchlistGroupNames] : []
+    );
+    setNewCategory("");
     setErrors({});
     setHasChanges(false);
-  }, [movie]);
+  }, [movie, categories]);
 
   const validateForm = () => {
     const newErrors: ValidationErrors = {};
     let isValid = true;
 
     if (!editedMovie.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
       isValid = false;
     }
 
     if (!editedMovie.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = "Description is required";
       isValid = false;
     }
 
-    if (!editedMovie.genre?.name) {
-      newErrors.genreName = 'Genre is required';
+    if (!editedMovie.genreName) {
+      newErrors.genreName = "Genre is required";
       isValid = false;
     }
 
     if (!editedMovie.watchlistOrder) {
-      newErrors.watchlistOrder = 'Watch order is required';
+      newErrors.watchlistOrder = "Watch order is required";
+      isValid = false;
+    }
+
+    if (selectedCategories.length === 0 && !newCategory.trim()) {
+      newErrors.category = "At least one category must be selected or created";
       isValid = false;
     }
 
@@ -98,12 +135,24 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
     return isValid;
   };
 
-  const checkForChanges = (updatedMovie: Movie) => {
+  const checkForChanges = (updatedMovie: AddMovieDTO) => {
+    const initialCategories = movie.watchlistGroupNames || [];
+    const isCategoryChanged =
+      selectedCategories.length !== initialCategories.length ||
+      selectedCategories.some(
+        (category) => !initialCategories.includes(category)
+      ) ||
+      initialCategories.some(
+        (category) => !selectedCategories.includes(category)
+      );
+
     return (
       updatedMovie.title !== movie.title ||
       updatedMovie.description !== movie.description ||
-      updatedMovie.genre?.name !== movie.genre?.name ||
-      updatedMovie.watchlistOrder !== movie.watchlistOrder
+      updatedMovie.genreName !== movie.genreName ||
+      updatedMovie.watchlistOrder !== movie.watchlistOrder ||
+      isCategoryChanged ||
+      newCategory.trim() !== ""
     );
   };
 
@@ -117,27 +166,27 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
     setHasChanges(checkForChanges(updatedMovie));
 
     if (errors[name as keyof ValidationErrors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: undefined
+        [name]: undefined,
       }));
     }
   };
 
   const handleSelectChange = (e: SelectChangeEvent) => {
     const { name, value } = e.target;
-    
-    setEditedMovie(prev => {
+
+    setEditedMovie((prev) => {
       let updated;
       if (name === "genreName") {
         updated = {
           ...prev,
-          genre: { ...prev.genre, name: value }
+          genreName: value,
         };
       } else if (name === "watchlistOrder") {
         updated = {
           ...prev,
-          watchlistOrder: value
+          watchlistOrder: value,
         };
       } else {
         updated = prev;
@@ -146,11 +195,40 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
     });
 
     setHasChanges(true);
-    
+
     if (errors[name as keyof ValidationErrors]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [name]: undefined,
+      }));
+    }
+  };
+
+  const handleCategoryChange = (e: SelectChangeEvent<string[]>) => {
+    const selectedValues = e.target.value as string[];
+    setSelectedCategories(selectedValues);
+
+    const updatedMovie = {
+      ...editedMovie,
+      watchlistGroupNames: selectedValues,
+    };
+    setHasChanges(checkForChanges(updatedMovie));
+
+    if (errors.category) {
+      setErrors((prev) => ({
+        ...prev,
+        category: undefined,
+      }));
+    }
+  };
+
+  const handleNewCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewCategory(e.target.value);
+    setHasChanges(true);
+    if (errors.category) {
+      setErrors((prev) => ({
+        ...prev,
+        category: undefined,
       }));
     }
   };
@@ -161,9 +239,13 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
       const movieToSave: AddMovieDTO = {
         title: editedMovie.title,
         description: editedMovie.description,
-        status: movie.status, 
+        status: movie.status,
         watchlistOrder: editedMovie.watchlistOrder,
-        genreName: editedMovie.genre?.name || '',
+        genreName: editedMovie.genreName || "",
+        watchlistGroupNames: [
+          ...selectedCategories,
+          ...(newCategory.trim() ? [newCategory.trim()] : []),
+        ],
       };
 
       onSave(movie.movieId, movieToSave);
@@ -172,17 +254,27 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth sx={{
-      '& .MuiPaper-root': {
-        border: '2px solid #2D6A4F', 
-        borderRadius: '8px', 
-      },
-    }}>
-      <DialogTitle sx={{
-        fontWeight: 'bold', 
-        textTransform: 'uppercase', 
-        color: '#2D6A4F', 
-      }}>Edit Movie</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        "& .MuiPaper-root": {
+          border: "2px solid #2D6A4F",
+          borderRadius: "8px",
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          fontWeight: "bold",
+          textTransform: "uppercase",
+          color: "#2D6A4F",
+        }}
+      >
+        Edit Movie
+      </DialogTitle>
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <TextField
@@ -207,29 +299,31 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
             error={!!errors.description}
             helperText={errors.description}
           />
-          <FormControl
-            fullWidth
-            margin="normal"
-            error={!!errors.genreName}
-          >
+          <FormControl fullWidth margin="normal" error={!!errors.genreName}>
             <InputLabel>Genre</InputLabel>
             <Select
               name="genreName"
-              value={editedMovie.genre?.name || ''}
+              value={editedMovie.genreName || ""}
               onChange={handleSelectChange}
               label="Genre"
             >
               {GENRES.map((genre) => (
-                <MenuItem key={genre} value={genre} sx={{
-                  "&:hover": {
-                    backgroundColor: "#E9F5EC", 
-                  },
-                }}>
+                <MenuItem
+                  key={genre}
+                  value={genre}
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#E9F5EC",
+                    },
+                  }}
+                >
                   {genre}
                 </MenuItem>
               ))}
             </Select>
-            {errors.genreName && <FormHelperText>{errors.genreName}</FormHelperText>}
+            {errors.genreName && (
+              <FormHelperText>{errors.genreName}</FormHelperText>
+            )}
           </FormControl>
           <FormControl
             fullWidth
@@ -239,52 +333,84 @@ const EditMovieModal: React.FC<EditMovieModalProps> = ({
             <InputLabel>Watch Order</InputLabel>
             <Select
               name="watchlistOrder"
-              value={editedMovie.watchlistOrder || ''}
+              value={editedMovie.watchlistOrder || ""}
               onChange={handleSelectChange}
               label="Watch Order"
             >
-              <MenuItem value="Next Up" sx={{
-                "&:hover": {
-                  backgroundColor: "#E9F5EC", 
-                },
-              }}>Next Up</MenuItem>
-              <MenuItem value="When I have time" sx={{
-                "&:hover": {
-                  backgroundColor: "#E9F5EC", 
-                },
-              }}>When I have time</MenuItem>
-              <MenuItem value="Someday" sx={{
-                "&:hover": {
-                  backgroundColor: "#E9F5EC", 
-                },
-              }}>Someday</MenuItem>
+              <MenuItem
+                value="Next Up"
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#E9F5EC",
+                  },
+                }}
+              >
+                Next Up
+              </MenuItem>
+              <MenuItem
+                value="When I have time"
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#E9F5EC",
+                  },
+                }}
+              >
+                When I have time
+              </MenuItem>
+              <MenuItem
+                value="Someday"
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "#E9F5EC",
+                  },
+                }}
+              >
+                Someday
+              </MenuItem>
             </Select>
-            {errors.watchlistOrder && <FormHelperText>{errors.watchlistOrder}</FormHelperText>}
+            {errors.watchlistOrder && (
+              <FormHelperText>{errors.watchlistOrder}</FormHelperText>
+            )}
           </FormControl>
+          <FormControl fullWidth margin="normal" error={!!errors.category}>
+            <InputLabel>Select Category</InputLabel>
+            <Select
+              multiple
+              value={selectedCategories}
+              onChange={handleCategoryChange}
+              renderValue={(selected) => selected.join(", ")}
+            >
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.name}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.category && (
+              <FormHelperText>{errors.category}</FormHelperText>
+            )}
+          </FormControl>
+          <Typography align="center" sx={{ my: 2 }}>
+            OR
+          </Typography>
+          <TextField
+            fullWidth
+            margin="normal"
+            label="New Category"
+            value={newCategory}
+            onChange={handleNewCategoryChange}
+            placeholder="Enter new category"
+          />
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={onClose}
-            sx={{
-              backgroundColor: '#E63946', 
-              color: '#FFFFFF', 
-              '&:hover': {
-                backgroundColor: '#B22234', 
-              },
-            }}
-          >Cancel</Button>
-
+          <Button onClick={onClose} color="error">
+            Cancel
+          </Button>
           <Button
             type="submit"
             variant="contained"
-            disabled={!hasChanges} 
-            sx={{
-              backgroundColor: hasChanges ? '#52B788' : '#A9A9A9', 
-              color: '#FFFFFF',
-              '&:hover': {
-                backgroundColor: hasChanges ? '#2D6A4F' : '#A9A9A9', 
-              },
-            }}
+            disabled={!hasChanges}
+            color="primary"
           >
             Save Changes
           </Button>

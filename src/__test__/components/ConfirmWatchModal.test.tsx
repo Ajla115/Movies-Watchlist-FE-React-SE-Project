@@ -15,6 +15,8 @@ describe("ConfirmWatchModal Component", () => {
     watchlistOrder: "Next Up",
     genre: { genreId: 1, name: "Action" },
     user: { userId: 1, email: "test@example.com", emailEnabled: true },
+    watchlistGroupNames: ["Demo Group"]
+    
   };
 
   beforeEach(() => {
