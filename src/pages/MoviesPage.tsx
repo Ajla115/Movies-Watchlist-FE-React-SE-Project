@@ -127,6 +127,8 @@ const MoviesPage: React.FC = () => {
     );
   };
 
+
+
   const genreOptions = [
     "Action",
     "Adventure",
@@ -190,15 +192,7 @@ const MoviesPage: React.FC = () => {
     // update state logic
   }, []);
 
-  
-  return (
-    <MovieList
-      movies={movies}
-      userId={userId}
-      categories={[]}
-      onMarkAsWatched={handleMarkAsWatched}
-    />
-  );
+
 
   const {
     data: allMovies,
@@ -584,13 +578,16 @@ const MoviesPage: React.FC = () => {
           <Box>
             <Box>
             {movies.length > 0 ? (
+    
+      
+
+    
+ 
     <MovieList
       movies={movies}
       userId={userId}
-      categories={categories}
-      onMarkAsWatched={(movieId: string) =>
-        console.log("Marking movie", movieId, "as watched")
-      }
+      categories={[]}
+      onMarkAsWatched={handleMarkAsWatched}
     />
   ) : (
     <Typography variant="h6" align="center" sx={{ mt: 4 }}>
