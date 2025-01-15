@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useWatchlistGroups,
@@ -33,6 +33,7 @@ import {
   useFilteredMovies,
   useAddMovie,
 } from "../hooks/useMovie";
+import MovieList from "../components/MovieList";
 
 const MoviesPage: React.FC = () => {
   const location = useLocation();
@@ -195,15 +196,25 @@ const MoviesPage: React.FC = () => {
     error,
   } = useFilteredMovies(userId, appliedFilters, filtersApplied);
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   if (fetchedMovies && fetchedMovies.length > 0) {
+  //     setMovies(fetchedMovies);
+  //   } else if (fetchedMovies?.length === 0) {
+  //     setMovies([]);
+  //   } else if (allMovies && !filtersApplied) {
+  //     setMovies(allMovies);
+  //   }
+  // }, [fetchedMovies, allMovies, filtersApplied]);
+
+  const filteredMovies = useMemo(() => {
     if (fetchedMovies && fetchedMovies.length > 0) {
-      setMovies(fetchedMovies);
-    } else if (fetchedMovies?.length === 0) {
-      setMovies([]);
+      return fetchedMovies;
     } else if (allMovies && !filtersApplied) {
-      setMovies(allMovies);
+      return allMovies;
     }
+    return [];
   }, [fetchedMovies, allMovies, filtersApplied]);
+  
 
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
 
@@ -566,25 +577,20 @@ const MoviesPage: React.FC = () => {
           </Box>
           <Box>
             <Box>
-              {movies.length > 0 ? (
-                <List>
-                  {movies.map((movie) => (
-                    <MovieItem
-                      key={movie.movieId}
-                      movie={movie}
-                      userId={userId}
-                      categories={categories}
-                      onMarkAsWatched={(movieId: string) =>
-                        console.log("Marking movie", movieId, "as watched")
-                      }
-                    />
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="h6" align="center" sx={{ mt: 4 }}>
-                  No movies found.
-                </Typography>
-              )}
+            {movies.length > 0 ? (
+    <MovieList
+      movies={filteredMovies}
+      userId={userId}
+      categories={categories}
+      onMarkAsWatched={(movieId: string) =>
+        console.log("Marking movie", movieId, "as watched")
+      }
+    />
+  ) : (
+    <Typography variant="h6" align="center" sx={{ mt: 4 }}>
+      No movies found.
+    </Typography>
+  )}
             </Box>
           </Box>
         </Box>
