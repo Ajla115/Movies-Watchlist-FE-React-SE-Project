@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useWatchlistGroups,
@@ -34,6 +34,7 @@ import {
   useAddMovie,
 } from "../hooks/useMovie";
 import MovieList from "../components/MovieList";
+
 
 const MoviesPage: React.FC = () => {
   const location = useLocation();
@@ -184,6 +185,21 @@ const MoviesPage: React.FC = () => {
     setFiltersApplied(false);
   };
 
+  const handleMarkAsWatched = useCallback((movieId: string) => {
+    console.log("Marking movie", movieId, "as watched");
+    // update state logic
+  }, []);
+
+  
+  return (
+    <MovieList
+      movies={movies}
+      userId={userId}
+      categories={[]}
+      onMarkAsWatched={handleMarkAsWatched}
+    />
+  );
+
   const {
     data: allMovies,
     isLoading: isAllMoviesLoading,
@@ -196,25 +212,15 @@ const MoviesPage: React.FC = () => {
     error,
   } = useFilteredMovies(userId, appliedFilters, filtersApplied);
 
-  // useEffect(() => {
-  //   if (fetchedMovies && fetchedMovies.length > 0) {
-  //     setMovies(fetchedMovies);
-  //   } else if (fetchedMovies?.length === 0) {
-  //     setMovies([]);
-  //   } else if (allMovies && !filtersApplied) {
-  //     setMovies(allMovies);
-  //   }
-  // }, [fetchedMovies, allMovies, filtersApplied]);
-
-  const filteredMovies = useMemo(() => {
+  useEffect(() => {
     if (fetchedMovies && fetchedMovies.length > 0) {
-      return fetchedMovies;
+      setMovies(fetchedMovies);
+    } else if (fetchedMovies?.length === 0) {
+      setMovies([]);
     } else if (allMovies && !filtersApplied) {
-      return allMovies;
+      setMovies(allMovies);
     }
-    return [];
   }, [fetchedMovies, allMovies, filtersApplied]);
-  
 
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
 
@@ -578,17 +584,14 @@ const MoviesPage: React.FC = () => {
           <Box>
             <Box>
             {movies.length > 0 ? (
-   <MovieList
-   movies={allMovies ?? []} // Use empty array if allMovies is undefined
-
-   appliedFilters={appliedFilters}
-   userId={userId}
-   categories={categories}
-   onMarkAsWatched={(movieId: string) =>
-     console.log("Marking movie", movieId, "as watched")
-   }
- />
- 
+    <MovieList
+      movies={movies}
+      userId={userId}
+      categories={categories}
+      onMarkAsWatched={(movieId: string) =>
+        console.log("Marking movie", movieId, "as watched")
+      }
+    />
   ) : (
     <Typography variant="h6" align="center" sx={{ mt: 4 }}>
       No movies found.
