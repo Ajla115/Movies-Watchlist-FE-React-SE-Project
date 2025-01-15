@@ -49,7 +49,7 @@ import { Movie} from "../types/Movie";
 import { WatchlistGroup } from "../types/WatchlistGroup";
 
 interface MovieListProps {
-  movies: Movie[];
+  movies?: Movie[];
   appliedFilters: {
     genre: string;
     status: string;
@@ -63,7 +63,7 @@ interface MovieListProps {
 }
 
 const MovieList: React.FC<MovieListProps> = ({
-  movies,
+  movies = [],
   appliedFilters,
   userId,
   categories,
