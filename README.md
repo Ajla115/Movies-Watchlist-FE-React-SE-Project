@@ -1,3 +1,4 @@
+# Movies-Watchlist-FE-React-SE-Project
 - This is a repository for the frontend of my project called Movies Watchlist. 
 - Frontend was built using React. 
 - Additionally, tests were written using Jest and React Testing Library.
